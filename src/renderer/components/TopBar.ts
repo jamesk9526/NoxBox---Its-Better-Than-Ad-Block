@@ -39,7 +39,6 @@ export class TopBar {
     const closeBtn = document.getElementById('close-btn');
     const settingsBtn = document.getElementById('settings-btn');
     const bookmarksBtn = document.getElementById('bookmarks-btn');
-    const historyBtn = document.getElementById('history-btn');
 
     minimizeBtn?.addEventListener('click', () => {
       if (window.appApi) {
@@ -80,11 +79,7 @@ export class TopBar {
       this.toggleBookmarks();
     });
 
-    historyBtn?.addEventListener('click', (e) => {
-      console.log('History button clicked in TopBar');
-      e.preventDefault();
-      this.toggleHistory();
-    });
+    // History button event listener will be set up in setHistoryPanel()
 
     // Update maximize button state on window state change
     this.updateMaximizeButtonState();

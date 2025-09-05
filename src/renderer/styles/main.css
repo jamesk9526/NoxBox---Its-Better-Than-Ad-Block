@@ -341,7 +341,7 @@ body {
   transition: filter var(--transition);
 }
 
-.media-blurred:hover {
+.media-blurred.hover-reveal:hover {
   filter: none;
 }
 

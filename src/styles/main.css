@@ -181,7 +181,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 18px;
   transition: background-color 0.2s;
 }
 
@@ -192,6 +192,16 @@ body {
 .nav-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.nav-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: normal;
+  font-style: normal;
 }
 
 .address-bar {
@@ -224,6 +234,50 @@ body {
   font-size: 12px;
   color: var(--text-secondary);
   -webkit-app-region: no-drag;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  -webkit-app-region: no-drag;
+}
+
+.zoom-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background-color 0.2s;
+}
+
+.zoom-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.zoom-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: normal;
+  font-style: normal;
+}
+
+#zoom-level {
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 40px;
+  text-align: center;
+  font-weight: 500;
 }
 
 /* Settings Panel */
@@ -402,7 +456,7 @@ body.reduced-motion * {
   transition: filter 0.18s ease;
 }
 
-.media-blurred:hover {
+.media-blurred.hover-reveal:hover {
   filter: none;
 }
 
@@ -411,4 +465,206 @@ body.reduced-motion * {
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
+}
+
+/* Find Modal */
+.find-modal {
+  position: fixed;
+  top: calc(var(--top-bar-height) + 10px);
+  right: 20px;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 350px;
+  max-width: calc(100vw - 40px);
+  transform: translateY(-10px);
+}
+
+.find-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.find-modal-content {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  animation: findModalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes findModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.find-input-container {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+}
+
+.find-icon {
+  color: var(--text-secondary);
+  font-size: 20px;
+  flex-shrink: 0;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  display: inline-block;
+}
+
+#find-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 16px;
+  outline: none;
+  padding: 8px 0;
+  min-width: 0;
+}
+
+#find-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.find-nav-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
+.find-nav-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.find-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.find-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 4px;
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
+.find-close-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+}
+
+.find-results {
+  padding: 8px 16px 12px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+#find-results-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Dark theme adjustments for find modal */
+body.dark .find-modal-content {
+  background: rgba(45, 45, 45, 0.95);
+  border-color: #555;
+}
+
+body.dark .find-results {
+  background: rgba(64, 64, 64, 0.5);
+  border-color: #555;
+}
+
+/* Focus highlight for found text */
+.find-highlight {
+  background: #ffeb3b !important;
+  color: #000 !important;
+  padding: 2px 4px !important;
+  border-radius: 2px !important;
+  animation: findHighlightPulse 1s ease-in-out;
+}
+
+@keyframes findHighlightPulse {
+  0%, 100% {
+    background: #ffeb3b;
+  }
+  50% {
+    background: #ffc107;
+  }
+}
+
+/* Dark theme find highlight */
+body.dark .find-highlight {
+  background: #ff9800 !important;
+  color: #000 !important;
+}
+
+body.dark .find-highlight {
+  animation: findHighlightPulseDark 1s ease-in-out;
+}
+
+@keyframes findHighlightPulseDark {
+  0%, 100% {
+    background: #ff9800;
+  }
+  50% {
+    background: #f57c00;
+  }
 }

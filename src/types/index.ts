@@ -6,6 +6,9 @@ export interface MediaBlurOptions {
 
 export interface AppSettings {
   mediaBlur: MediaBlurOptions;
+  adBlocking: {
+    enabled: boolean;
+  };
   theme: 'light' | 'dark' | 'high-contrast';
   accessibility: {
     highContrast: boolean;
