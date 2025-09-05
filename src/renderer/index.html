@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoxBox - Privacy Browser</title>
+    <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Top Bar -->
+        <header id="top-bar" class="top-bar">
+            <div class="window-controls">
+                <button id="minimize-btn" class="window-control" aria-label="Minimize">
+                    <span class="control-icon">—</span>
+                </button>
+                <button id="maximize-btn" class="window-control" aria-label="Maximize">
+                    <span class="control-icon">□</span>
+                </button>
+                <button id="close-btn" class="window-control close" aria-label="Close">
+                    <span class="control-icon">×</span>
+                </button>
+            </div>
+            <div class="title-bar">
+                <span class="app-title">NoxBox</span>
+            </div>
+            <div class="top-controls">
+                <button id="bookmarks-btn" class="top-control" aria-label="Bookmarks">
+                    <span class="control-icon">☆</span>
+                </button>
+                <button id="history-btn" class="top-control" aria-label="History">
+                    <span class="control-icon">🕒</span>
+                </button>
+                <button id="settings-btn" class="top-control" aria-label="Settings">
+                    <span class="control-icon">⚙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="browser-content">
+                <webview id="browser-webview" src="https://www.google.com" class="browser-webview" title="Browser Content" preload="http://localhost:5174/webview-preload.js"></webview>
+            </div>
+        </main>
+
+        <!-- Bottom Bar -->
+        <footer id="bottom-bar" class="bottom-bar">
+            <div class="nav-controls">
+                <button id="back-btn" class="nav-btn" disabled aria-label="Go back">
+                    <span class="nav-icon">←</span>
+                </button>
+                <button id="forward-btn" class="nav-btn" disabled aria-label="Go forward">
+                    <span class="nav-icon">→</span>
+                </button>
+                <button id="refresh-btn" class="nav-btn" aria-label="Refresh">
+                    <span class="nav-icon">↻</span>
+                </button>
+                <button id="bookmark-btn" class="nav-btn" aria-label="Bookmark current page">
+                    <span class="nav-icon">☆</span>
+                </button>
+            </div>
+            <div class="address-bar">
+                <input
+                    type="text"
+                    id="address-input"
+                    placeholder="Enter URL or search..."
+                    value="https://www.google.com"
+                    aria-label="Address bar"
+                />
+            </div>
+            <div class="status-info">
+                <span id="status-text">Ready</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- History Panel -->
+    <div id="history-panel" class="history-panel">
+        <div class="history-content">
+            <header class="history-header">
+                <h2>Browsing History</h2>
+                <button id="close-history-btn" class="close-history" aria-label="Close history">
+                    <span>×</span>
+                </button>
+            </header>
+
+            <div class="history-body">
+                <div class="history-controls">
+                    <div class="search-container">
+                        <input
+                            type="text"
+                            id="history-search"
+                            placeholder="Search history..."
+                            aria-label="Search history"
+                        />
+                        <button id="clear-search-btn" class="clear-search" aria-label="Clear search">
+                            <span>×</span>
+                        </button>
+                    </div>
+                    <div class="filter-controls">
+                        <select id="history-filter" aria-label="Filter history by time period">
+                            <option value="all">All History</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                        <button id="clear-history-btn" class="clear-history-btn" aria-label="Clear all history">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Visits:</span>
+                        <span id="total-visits" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Pages:</span>
+                        <span id="total-pages" class="stat-value">0</span>
+                    </div>
+                </div>
+
+                <div id="history-list" class="history-list">
+                    <!-- History entries will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="settings-panel">
+        <div class="settings-content">
+            <header class="settings-header">
+                <h2>Settings</h2>
+                <button id="close-settings-btn" class="close-settings" aria-label="Close settings">
+                    <span>×</span>
+                </button>
+            </header>
+
+            <div class="settings-body">
+                <section class="settings-section">
+                    <h3>Media Blur</h3>
+                    <div class="setting-item">
+                        <label for="blur-images-toggle">Blur Images</label>
+                        <input type="checkbox" id="blur-images-toggle" checked />
+                    </div>
+                    <div class="setting-item">
+                        <label for="blur-videos-toggle">Blur Videos</label>
+                        <input type="checkbox" id="blur-videos-toggle" checked />
+                    </div>
+                    <div class="setting-item">
+                        <label for="blur-radius-slider">Blur Intensity</label>
+                        <input
+                            type="range"
+                            id="blur-radius-slider"
+                            min="1"
+                            max="20"
+                            value="6"
+                            step="1"
+                        />
+                        <span id="blur-radius-value">6px</span>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3>Appearance</h3>
+                    <div class="setting-item">
+                        <label for="theme-select">Theme</label>
+                        <select id="theme-select">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="high-contrast">High Contrast</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="hover-reveal-toggle">Show on Hover</label>
+                        <input type="checkbox" id="hover-reveal-toggle" />
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3>Accessibility</h3>
+                    <div class="setting-item">
+                        <label for="large-text-toggle">Large Text</label>
+                        <input type="checkbox" id="large-text-toggle" />
+                    </div>
+                    <div class="setting-item">
+                        <label for="reduced-motion-toggle">Reduced Motion</label>
+                        <input type="checkbox" id="reduced-motion-toggle" />
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="./app.ts" type="module"></script>
+</body>
+</html>

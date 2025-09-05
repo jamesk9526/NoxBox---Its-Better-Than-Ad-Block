@@ -1,0 +1,40 @@
+body {
+    background-color: #f3f3f3;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+header {
+    background-color: #0078d4;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+img, video {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
+}
+
+img:hover, video:hover {
+    filter: none;
+}
+
+.button {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background-color: #005a9e;
+}
