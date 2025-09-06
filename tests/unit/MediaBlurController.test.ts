@@ -52,7 +52,7 @@ describe('MediaBlurController', () => {
     controller = new MediaBlurController({
       blurImages: true,
       blurVideos: true,
-      blurRadiusPx: 6,
+      blurRadiusPx: 25,
     });
   });
 
@@ -60,7 +60,7 @@ describe('MediaBlurController', () => {
     const options = controller.getOptions();
     expect(options.blurImages).toBe(true);
     expect(options.blurVideos).toBe(true);
-    expect(options.blurRadiusPx).toBe(6);
+    expect(options.blurRadiusPx).toBe(25);
   });
 
   it('should update options correctly', () => {

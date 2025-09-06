@@ -3,7 +3,153 @@ console.log('[Webview] ===== WEBVIEW SCRIPT STARTING =====');
 
 // Global state for unblur mode
 let isUnblurModeActive = false;
-let currentBlurRadius = 6; // Default blur radius in pixels
+let currentBlurRadius = 25; // Default blur radius in pixels
+let isPageLoading = true;
+let blurApplied = false;
+
+// ===== PRIORITY BLUR APPLICATION =====
+// Apply blur styles IMMEDIATELY before any content loads
+function applyPriorityBlur() {
+  if (blurApplied) return;
+  blurApplied = true;
+
+  console.log('[Webview] 🚀 Applying priority blur styles immediately');
+
+  const priorityStyle = document.createElement('style');
+  priorityStyle.id = 'noxbox-priority-blur';
+  priorityStyle.textContent = `
+    /* ===== PRIORITY BLUR - APPLIED BEFORE CONTENT LOADS ===== */
+
+    /* Immediate blur for all media elements */
+    img, video, audio, canvas, svg, picture, object, embed,
+    [src], [data-src], [data-original], [data-lazy-src], [data-srcset],
+    [style*="background-image"], [style*="background"],
+    [role="img"], .media-element, .video-player, .audio-player, .image-container,
+    [data-testid*="video"], [data-testid*="media"], [data-testid*="image"],
+    [class*="video"], [class*="media"], [class*="image"], [class*="player"],
+    [class*="instagram"], [class*="twitter"], [class*="facebook"], [class*="tiktok"],
+    [class*="youtube"], [class*="vimeo"], [class*="twitch"],
+    video[aria-label="video player"], video[src*="redd.it"], video[poster*="redd.it"] {
+      filter: blur(${currentBlurRadius}px) !important;
+      transition: filter 180ms ease !important;
+      cursor: pointer !important;
+      position: relative !important;
+    }
+
+    /* Don't blur unlocked media */
+    img.media-unlocked, video.media-unlocked, audio.media-unlocked,
+    canvas.media-unlocked, svg.media-unlocked, picture.media-unlocked,
+    object.media-unlocked, embed.media-unlocked {
+      filter: none !important;
+      cursor: default !important;
+    }
+  `;
+
+  // Insert at the very beginning of head to ensure priority
+  if (document.head) {
+    document.head.insertBefore(priorityStyle, document.head.firstChild);
+  } else {
+    // If head doesn't exist yet, wait for it
+    const observer = new MutationObserver(() => {
+      if (document.head) {
+        document.head.insertBefore(priorityStyle, document.head.firstChild);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document, { childList: true, subtree: true });
+  }
+
+  console.log('[Webview] ✅ Priority blur applied with radius:', currentBlurRadius + 'px');
+}
+
+// Apply priority blur immediately
+applyPriorityBlur();
+
+// ===== NAVIGATION THROTTLING =====
+// Throttle page loading to prioritize blur application
+function throttlePageLoad() {
+  console.log('[Webview] 🕐 Throttling page load to prioritize blur');
+
+  // Intercept and delay resource loading for a brief moment
+  const originalFetch = window.fetch;
+  window.fetch = function(...args) {
+    if (isPageLoading && !blurApplied) {
+      // Delay fetch requests by 50ms to ensure blur is applied first
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          originalFetch.apply(this, args).then(resolve).catch(reject);
+        }, 50);
+      });
+    }
+    return originalFetch.apply(this, args);
+  };
+
+  // Intercept XMLHttpRequest
+  const originalOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url, ...args) {
+    if (isPageLoading && !blurApplied) {
+      setTimeout(() => {
+        originalOpen.call(this, method, url, ...args);
+      }, 30);
+    } else {
+      originalOpen.call(this, method, url, ...args);
+    }
+  };
+
+  // Mark page as loaded after a short delay
+  setTimeout(() => {
+    isPageLoading = false;
+    console.log('[Webview] 📄 Page loading phase complete, blur prioritized');
+  }, 200);
+}
+
+// ===== NAVIGATION EVENT HANDLING =====
+// Re-apply priority blur on navigation
+function setupNavigationHandlers() {
+  console.log('[Webview] Setting up navigation handlers for priority blur');
+
+  // Listen for navigation start
+  window.addEventListener('beforeunload', () => {
+    console.log('[Webview] Navigation detected, preparing priority blur');
+    isPageLoading = true;
+    blurApplied = false;
+  });
+
+  // Listen for page show (back/forward navigation)
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      console.log('[Webview] Page restored from cache, re-applying priority blur');
+      applyPriorityBlur();
+      throttlePageLoad();
+    }
+  });
+
+  // Intercept link clicks to apply blur before navigation
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    const link = target.closest('a');
+
+    if (link && link.href && !link.href.startsWith('javascript:')) {
+      console.log('[Webview] Link clicked, preparing priority blur for navigation');
+      isPageLoading = true;
+      blurApplied = false;
+
+      // Apply priority blur immediately
+      setTimeout(() => applyPriorityBlur(), 10);
+    }
+  }, true); // Use capture phase to catch clicks early
+
+  // Listen for popstate (browser back/forward)
+  window.addEventListener('popstate', () => {
+    console.log('[Webview] Popstate detected, re-applying priority blur');
+    isPageLoading = true;
+    blurApplied = false;
+    setTimeout(() => applyPriorityBlur(), 10);
+  });
+}
+
+// Setup navigation handlers
+setupNavigationHandlers();
 
 // Function to update mode indicator
 function updateModeIndicator(enabled) {
@@ -180,41 +326,60 @@ function loadUnlockedMedia() {
 function updateBlurRadius(radius) {
   console.log('[Webview] Updating blur radius to:', radius + 'px');
   currentBlurRadius = radius;
+
+  // Update priority blur immediately
+  const priorityStyle = document.getElementById('noxbox-priority-blur');
+  if (priorityStyle) {
+    priorityStyle.textContent = `
+      /* ===== PRIORITY BLUR - UPDATED ===== */
+
+      /* Immediate blur for all media elements */
+      img, video, audio, canvas, svg, picture, object, embed,
+      [src], [data-src], [data-original], [data-lazy-src], [data-srcset],
+      [style*="background-image"], [style*="background"],
+      [role="img"], .media-element, .video-player, .audio-player, .image-container,
+      [data-testid*="video"], [data-testid*="media"], [data-testid*="image"],
+      [class*="video"], [class*="media"], [class*="image"], [class*="player"],
+      [class*="instagram"], [class*="twitter"], [class*="facebook"], [class*="tiktok"],
+      [class*="youtube"], [class*="vimeo"], [class*="twitch"],
+      video[aria-label="video player"], video[src*="redd.it"], video[poster*="redd.it"] {
+        filter: blur(${currentBlurRadius}px) !important;
+        transition: filter 180ms ease !important;
+        cursor: pointer !important;
+        position: relative !important;
+      }
+
+      /* Don't blur unlocked media */
+      img.media-unlocked, video.media-unlocked, audio.media-unlocked,
+      canvas.media-unlocked, svg.media-unlocked, picture.media-unlocked,
+      object.media-unlocked, embed.media-unlocked {
+        filter: none !important;
+        cursor: default !important;
+      }
+    `;
+    console.log('[Webview] ✅ Priority blur updated immediately');
+  }
+
+  // Also update comprehensive styles if they exist
   injectBlurStyles();
 }
 
-// Inject blur styles when DOM changes
+// Inject comprehensive blur styles when DOM changes
 const injectBlurStyles = () => {
-  // Remove existing blur styles to avoid duplicates
+  // Remove existing comprehensive blur styles to avoid duplicates
   const existingStyle = document.getElementById('noxbox-blur-styles');
   if (existingStyle) {
     existingStyle.remove();
   }
 
-  console.log('[Webview] Injecting blur styles with radius:', currentBlurRadius + 'px');
+  console.log('[Webview] Injecting comprehensive blur styles with radius:', currentBlurRadius + 'px');
 
   const style = document.createElement('style');
   style.id = 'noxbox-blur-styles';
   style.textContent = `
     /* ===== COMPREHENSIVE MEDIA BLUR SYSTEM WITH SELECTIVE UNBLUR ===== */
 
-    /* Standard media elements */
-    img, video, audio, canvas, svg, picture, object, embed {
-      filter: blur(${currentBlurRadius}px) !important;
-      transition: filter 180ms ease;
-      cursor: pointer;
-      position: relative;
-    }
-
-    /* Don't blur unlocked media */
-    img.media-unlocked, video.media-unlocked, audio.media-unlocked,
-    canvas.media-unlocked, svg.media-unlocked, picture.media-unlocked,
-    object.media-unlocked, embed.media-unlocked {
-      filter: none !important;
-      cursor: default;
-    }
-
-    /* Hover effects for blurred media */
+    /* Hover effects for blurred media (enhances priority blur) */
     img:hover:not(.media-unlocked), video:hover:not(.media-unlocked),
     audio:hover:not(.media-unlocked), canvas:hover:not(.media-unlocked),
     svg:hover:not(.media-unlocked), picture:hover:not(.media-unlocked),
@@ -294,99 +459,37 @@ const injectBlurStyles = () => {
       opacity: 1;
     }
 
-    /* Elements with media-related attributes */
-    [src], [data-src], [data-original], [data-lazy-src], [data-srcset] {
-      filter: blur(${currentBlurRadius}px) !important;
-    }
+    /* Elements with media-related attributes - enhance priority blur */
     [src]:hover, [data-src]:hover, [data-original]:hover, [data-lazy-src]:hover, [data-srcset]:hover {
       filter: none !important;
     }
 
-    /* Don't blur unlocked elements with media attributes */
-    [src].media-unlocked, [data-src].media-unlocked, [data-original].media-unlocked,
-    [data-lazy-src].media-unlocked, [data-srcset].media-unlocked {
-      filter: none !important;
-    }
-
-    /* Background images */
-    [style*="background-image"], [style*="background"] {
-      filter: blur(${currentBlurRadius}px) !important;
-    }
+    /* Background images hover - enhance priority blur */
     [style*="background-image"]:hover, [style*="background"]:hover {
       filter: none !important;
     }
 
-    /* Don't blur unlocked background images */
-    [style*="background-image"].media-unlocked, [style*="background"].media-unlocked {
-      filter: none !important;
-    }
-
-    /* Media containers and players */
-    .media-element, .video-player, .audio-player, .image-container,
-    [data-testid*="video"], [data-testid*="media"], [data-testid*="image"],
-    [class*="video"], [class*="media"], [class*="image"], [class*="player"] {
-      filter: blur(${currentBlurRadius}px) !important;
-    }
+    /* Media containers and players hover - enhance priority blur */
     .media-element:hover, .video-player:hover, .audio-player:hover, .image-container:hover,
     [data-testid*="video"]:hover, [data-testid*="media"]:hover, [data-testid*="image"]:hover,
     [class*="video"]:hover, [class*="media"]:hover, [class*="image"]:hover, [class*="player"]:hover {
       filter: none !important;
     }
 
-    /* Don't blur unlocked media containers */
-    .media-element.media-unlocked, .video-player.media-unlocked, .audio-player.media-unlocked,
-    .image-container.media-unlocked, [data-testid*="video"].media-unlocked,
-    [data-testid*="media"].media-unlocked, [data-testid*="image"].media-unlocked,
-    [class*="video"].media-unlocked, [class*="media"].media-unlocked,
-    [class*="image"].media-unlocked, [class*="player"].media-unlocked {
-      filter: none !important;
-    }
-
-    /* Reddit specific */
-    video[aria-label="video player"], video[src*="redd.it"], video[poster*="redd.it"],
-    video[playsinline][preload][tabindex] {
-      filter: blur(${currentBlurRadius}px) !important;
-    }
+    /* Reddit specific hover - enhance priority blur */
     video[aria-label="video player"]:hover, video[src*="redd.it"]:hover, video[poster*="redd.it"]:hover,
     video[playsinline][preload][tabindex]:hover {
       filter: none !important;
     }
 
-    /* Don't blur unlocked Reddit videos */
-    video[aria-label="video player"].media-unlocked, video[src*="redd.it"].media-unlocked,
-    video[poster*="redd.it"].media-unlocked, video[playsinline][preload][tabindex].media-unlocked {
-      filter: none !important;
-    }
-
-    /* Social media platforms */
-    [class*="instagram"], [class*="twitter"], [class*="facebook"], [class*="tiktok"],
-    [class*="youtube"], [class*="vimeo"], [class*="twitch"] {
-      filter: blur(${currentBlurRadius}px) !important;
-    }
+    /* Social media platforms hover - enhance priority blur */
     [class*="instagram"]:hover, [class*="twitter"]:hover, [class*="facebook"]:hover, [class*="tiktok"]:hover,
     [class*="youtube"]:hover, [class*="vimeo"]:hover, [class*="twitch"]:hover {
       filter: none !important;
     }
 
-    /* Don't blur unlocked social media */
-    [class*="instagram"].media-unlocked, [class*="twitter"].media-unlocked,
-    [class*="facebook"].media-unlocked, [class*="tiktok"].media-unlocked,
-    [class*="youtube"].media-unlocked, [class*="vimeo"].media-unlocked,
-    [class*="twitch"].media-unlocked {
-      filter: none !important;
-    }
-
-    /* Generic media detection - catch all elements that might contain media */
-    [role="img"], .media-blur-target, [data-media], [data-image], [data-video] {
-      filter: blur(${currentBlurRadius}px) !important;
-    }
+    /* Generic media detection hover - enhance priority blur */
     [role="img"]:hover, .media-blur-target:hover, [data-media]:hover, [data-image]:hover, [data-video]:hover {
-      filter: none !important;
-    }
-
-    /* Don't blur unlocked generic media */
-    [role="img"].media-unlocked, .media-blur-target.media-unlocked,
-    [data-media].media-unlocked, [data-image].media-unlocked, [data-video].media-unlocked {
       filter: none !important;
     }
   `;

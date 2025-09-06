@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   mediaBlur: {
     blurImages: true,
     blurVideos: true,
-    blurRadiusPx: 6,
+    blurRadiusPx: 25,
   },
   theme: 'light',
   accessibility: {
@@ -69,8 +69,9 @@ class App {
 
     // Sync loaded settings to SettingsPanel
     setTimeout(() => {
+      console.log('App: Syncing loaded settings to SettingsPanel:', this.settings);
       this.settingsPanel.updateCurrentSettings(this.settings);
-    }, 100);
+    }, 500);
 
     // Show onboarding if it's the first time
     setTimeout(() => {
@@ -83,10 +84,17 @@ class App {
   private loadSettings(): AppSettings {
     try {
       const stored = localStorage.getItem('noxbox-settings');
+      console.log('App: Loading settings from localStorage:', stored);
       if (stored) {
         const parsed = JSON.parse(stored);
+        console.log('App: Parsed settings:', parsed);
         // Merge with defaults to ensure all properties exist
-        return { ...DEFAULT_SETTINGS, ...parsed };
+        const merged = { ...DEFAULT_SETTINGS, ...parsed };
+        console.log('App: Final merged settings:', merged);
+        console.log('App: Blur radius from loaded settings:', merged.mediaBlur.blurRadiusPx);
+        return merged;
+      } else {
+        console.log('App: No saved settings found, using defaults');
       }
     } catch (error) {
       console.warn('Failed to load settings from localStorage:', error);

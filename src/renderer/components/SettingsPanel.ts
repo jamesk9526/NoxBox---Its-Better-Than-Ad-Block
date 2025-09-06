@@ -26,7 +26,8 @@ export class SettingsPanel {
     console.log('Settings panel element found:', !!this.element);
     this.currentSettings = this.getDefaultSettings();
     this.setupEventListeners();
-    this.loadSettings();
+    // Don't load settings here - let the App provide them via updateCurrentSettings
+    // this.loadSettings();
     // Ensure panel starts hidden by setting display to none
     console.log('Ensuring panel starts hidden');
     this.element.style.display = 'none';
@@ -38,7 +39,7 @@ export class SettingsPanel {
       mediaBlur: {
         blurImages: true,
         blurVideos: true,
-        blurRadiusPx: 6,
+        blurRadiusPx: 25,
       },
       theme: 'light',
       accessibility: {
@@ -204,6 +205,7 @@ export class SettingsPanel {
   }
 
   private updateUI(): void {
+    console.log('SettingsPanel: updateUI called with settings:', this.currentSettings);
     // Update form elements to match current settings
     const blurImagesToggle = document.getElementById('blur-images-toggle') as HTMLInputElement;
     const blurVideosToggle = document.getElementById('blur-videos-toggle') as HTMLInputElement;
@@ -216,8 +218,14 @@ export class SettingsPanel {
 
     if (blurImagesToggle) blurImagesToggle.checked = this.currentSettings.mediaBlur.blurImages;
     if (blurVideosToggle) blurVideosToggle.checked = this.currentSettings.mediaBlur.blurVideos;
-    if (blurRadiusSlider) blurRadiusSlider.value = this.currentSettings.mediaBlur.blurRadiusPx.toString();
-    if (blurRadiusValue) blurRadiusValue.textContent = `${this.currentSettings.mediaBlur.blurRadiusPx}px`;
+    if (blurRadiusSlider) {
+      blurRadiusSlider.value = this.currentSettings.mediaBlur.blurRadiusPx.toString();
+      console.log('SettingsPanel: Set slider value to:', blurRadiusSlider.value);
+    }
+    if (blurRadiusValue) {
+      blurRadiusValue.textContent = `${this.currentSettings.mediaBlur.blurRadiusPx}px`;
+      console.log('SettingsPanel: Set display to:', blurRadiusValue.textContent);
+    }
     if (themeSelect) themeSelect.value = this.currentSettings.theme;
     if (hoverRevealToggle) hoverRevealToggle.checked = this.currentSettings.ui.showHoverReveal;
     if (largeTextToggle) largeTextToggle.checked = this.currentSettings.accessibility.largeText;

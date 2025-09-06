@@ -131,7 +131,10 @@ export class BottomBar {
             });
           }
         } catch {}
-        this.injectBlurStyles();
+        // Get current blur radius from settings and inject styles
+        const currentBlurRadius = getComputedStyle(document.documentElement).getPropertyValue('--blur-radius') || '25px';
+        const blurRadiusPx = parseInt(currentBlurRadius.replace('px', '')) || 25;
+        this.injectBlurStyles(blurRadiusPx);
         this.injectPreloadScript();
         this.updateAddressBar();
         this.updateNavigationButtons();
