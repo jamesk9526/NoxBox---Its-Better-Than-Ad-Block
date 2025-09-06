@@ -50,8 +50,25 @@ const injectBlurStyles = () => {
     document.head.appendChild(style);
     console.log('[Webview] Blur styles injected');
 };
+// Delay image loading by 1 second to allow blur to take effect
+const delayImageLoading = (img) => {
+    if (img.src && !img.src.startsWith('data:') && !img.hasAttribute('data-delayed')) {
+        img.setAttribute('data-delayed', 'true');
+        const originalSrc = img.src;
+        img.src = ''; // Clear src to prevent loading
+        setTimeout(() => {
+            img.src = originalSrc;
+            console.log('[Webview] Delayed image loaded:', originalSrc);
+        }, 1000);
+    }
+};
+// Apply delay to existing images
+const delayExistingImages = () => {
+    document.querySelectorAll('img').forEach(delayImageLoading);
+};
 // Inject styles on load
 injectBlurStyles();
+delayExistingImages();
 // Watch for new images/videos
 const observer = new MutationObserver((mutations) => {
     let hasNewMedia = false;
@@ -59,12 +76,18 @@ const observer = new MutationObserver((mutations) => {
         mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
                 const element = node;
-                if (element.tagName === 'IMG' || element.tagName === 'VIDEO') {
+                if (element.tagName === 'IMG') {
+                    delayImageLoading(element);
+                    hasNewMedia = true;
+                }
+                else if (element.tagName === 'VIDEO') {
                     hasNewMedia = true;
                 }
                 // Check descendants too
-                const media = element.querySelectorAll('img, video');
-                if (media.length > 0) {
+                const images = element.querySelectorAll('img');
+                images.forEach(delayImageLoading);
+                const videos = element.querySelectorAll('video');
+                if (videos.length > 0) {
                     hasNewMedia = true;
                 }
             }

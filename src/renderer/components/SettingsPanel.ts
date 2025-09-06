@@ -135,14 +135,6 @@ export class SettingsPanel {
       this.updateMediaBlurSettings({ blurRadiusPx: value });
     });
 
-    // Ad blocking settings
-    const adBlockingToggle = document.getElementById('ad-blocking-toggle') as HTMLInputElement;
-    adBlockingToggle?.addEventListener('change', () => {
-      this.updateSettings({
-        adBlocking: { enabled: adBlockingToggle.checked }
-      });
-    });
-
     // Theme settings
     const themeSelect = document.getElementById('theme-select') as HTMLSelectElement;
     const hoverRevealToggle = document.getElementById('hover-reveal-toggle') as HTMLInputElement;
@@ -210,7 +202,6 @@ export class SettingsPanel {
     const hoverRevealToggle = document.getElementById('hover-reveal-toggle') as HTMLInputElement;
     const largeTextToggle = document.getElementById('large-text-toggle') as HTMLInputElement;
     const reducedMotionToggle = document.getElementById('reduced-motion-toggle') as HTMLInputElement;
-    const adBlockingToggle = document.getElementById('ad-blocking-toggle') as HTMLInputElement;
 
     if (blurImagesToggle) blurImagesToggle.checked = this.currentSettings.mediaBlur.blurImages;
     if (blurVideosToggle) blurVideosToggle.checked = this.currentSettings.mediaBlur.blurVideos;
@@ -220,7 +211,6 @@ export class SettingsPanel {
     if (hoverRevealToggle) hoverRevealToggle.checked = this.currentSettings.ui.showHoverReveal;
     if (largeTextToggle) largeTextToggle.checked = this.currentSettings.accessibility.largeText;
     if (reducedMotionToggle) reducedMotionToggle.checked = this.currentSettings.accessibility.reducedMotion;
-    if (adBlockingToggle) adBlockingToggle.checked = this.currentSettings.adBlocking.enabled;
   }
 
   show(): void {

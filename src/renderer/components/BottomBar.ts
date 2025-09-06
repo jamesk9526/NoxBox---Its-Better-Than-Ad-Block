@@ -6,10 +6,6 @@ export class BottomBar {
   private webview: any; // Electron webview element
   private historyManager: HistoryManager;
   private currentUrl: string = '';
-  private findModal: HTMLElement;
-  private findInput: HTMLInputElement;
-  private findResultsText: HTMLElement;
-  private currentFindRequestId: number | null = null;
 
   constructor() {
     console.log('BottomBar constructor called');
@@ -17,9 +13,6 @@ export class BottomBar {
     this.addressInput = document.getElementById('address-input') as HTMLInputElement;
     this.webview = document.getElementById('browser-webview') as any;
     this.historyManager = HistoryManager.getInstance();
-    this.findModal = document.getElementById('find-modal')!;
-    this.findInput = document.getElementById('find-input') as HTMLInputElement;
-    this.findResultsText = document.getElementById('find-results-text') as HTMLElement;
     console.log('Browser webview found:', !!this.webview);
     this.setupEventListeners();
     this.initializeNavigation();
@@ -34,15 +27,13 @@ export class BottomBar {
     const refreshBtn = document.getElementById('refresh-btn');
     const homeBtn = document.getElementById('home-btn');
     const bookmarkBtn = document.getElementById('bookmark-btn');
-    const findBtn = document.getElementById('find-btn');
 
     console.log('Navigation buttons found:', {
       back: !!backBtn,
       forward: !!forwardBtn,
       refresh: !!refreshBtn,
       home: !!homeBtn,
-      bookmark: !!bookmarkBtn,
-      find: !!findBtn
+      bookmark: !!bookmarkBtn
     });
 
     backBtn?.addEventListener('click', (e) => {
@@ -73,62 +64,6 @@ export class BottomBar {
       console.log('Bookmark button clicked');
       e.preventDefault();
       this.bookmarkCurrentPage();
-    });
-
-    findBtn?.addEventListener('click', (e) => {
-      console.log('Find button clicked');
-      e.preventDefault();
-      this.showFindModal();
-    });
-
-    // Zoom controls
-    const zoomInBtn = document.getElementById('zoom-in-btn');
-    const zoomOutBtn = document.getElementById('zoom-out-btn');
-    const fullscreenBtn = document.getElementById('fullscreen-btn');
-
-    zoomInBtn?.addEventListener('click', (e) => {
-      console.log('Zoom in button clicked');
-      e.preventDefault();
-      this.zoomIn();
-    });
-
-    zoomOutBtn?.addEventListener('click', (e) => {
-      console.log('Zoom out button clicked');
-      e.preventDefault();
-      this.zoomOut();
-    });
-
-    fullscreenBtn?.addEventListener('click', (e) => {
-      console.log('Fullscreen button clicked');
-      e.preventDefault();
-      this.toggleFullscreen();
-    });
-
-    // Find modal events
-    this.findInput.addEventListener('input', () => {
-      this.performFind();
-    });
-
-    this.findInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.findNext();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        this.hideFindModal();
-      }
-    });
-
-    document.getElementById('find-prev-btn')?.addEventListener('click', () => {
-      this.findPrevious();
-    });
-
-    document.getElementById('find-next-btn')?.addEventListener('click', () => {
-      this.findNext();
-    });
-
-    document.getElementById('find-close-btn')?.addEventListener('click', () => {
-      this.hideFindModal();
     });
 
     // Address bar
@@ -234,15 +169,6 @@ export class BottomBar {
         try {
           console.log('Webview console:', e?.message);
         } catch {}
-      });
-
-      this.webview.addEventListener('found-in-page', (e: any) => {
-        console.log('Found in page result:', e.result);
-        if (e.result && e.result.requestId === this.currentFindRequestId) {
-          const activeMatchOrdinal = e.result.activeMatchOrdinal || 0;
-          const matches = e.result.matches || 0;
-          this.findResultsText.textContent = `${activeMatchOrdinal} of ${matches}`;
-        }
       });
 
       // Listen for messages from the webview
@@ -375,7 +301,6 @@ export class BottomBar {
     this.currentUrl = initialUrl;
     this.updateAddressBar();
     this.updateNavigationButtons();
-    this.updateZoomDisplay();
   }
 
   private handleAddressSubmit(): void {
@@ -803,37 +728,9 @@ export class BottomBar {
   private async injectBlurStyles(): Promise<void> {
     try {
       const blurRadius = getComputedStyle(document.documentElement).getPropertyValue('--blur-radius') || '6px';
-      const css = `
-        img, video {
-          filter: blur(${blurRadius.trim()}) !important;
-          transition: filter 180ms ease;
-        }
-        img:hover, video:hover {
-          filter: none !important;
-        }
-        /* Target common ad selectors */
-        [id*="ad"], [class*="ad"], [id*="banner"], [class*="banner"],
-        [id*="sponsor"], [class*="sponsor"], [id*="promo"], [class*="promo"] img,
-        [id*="google"], [class*="google"] img,
-        iframe[src*="ads"], iframe[src*="doubleclick"], iframe[src*="googlesyndication"] {
-          filter: blur(${blurRadius.trim()}) !important;
-        }
-        /* Target images within ad containers */
-        div[id*="ad"] img, div[class*="ad"] img,
-        div[id*="banner"] img, div[class*="banner"] img {
-          filter: blur(${blurRadius.trim()}) !important;
-        }
-        /* Target video ads specifically */
-        video[autoplay], video[loop], video[muted], video[playsinline], video[webkit-playsinline] {
-          filter: blur(${blurRadius.trim()}) !important;
-        }
-        /* Target videos inside links (common ad pattern) */
-        a video {
-          filter: blur(${blurRadius.trim()}) !important;
-        }
-      `;
+      const css = `img,video{filter: blur(${blurRadius.trim()}) !important; transition: filter 180ms ease;} img:hover,video:hover{filter:none !important;}`;
       await this.webview.insertCSS?.(css);
-      console.log('Injected enhanced blur CSS into webview');
+      console.log('Injected blur CSS into webview');
     } catch (e) {
       console.warn('Failed to inject blur CSS:', e);
     }
@@ -876,113 +773,6 @@ export class BottomBar {
     const forwardBtn = document.getElementById('forward-btn') as HTMLButtonElement;
     if (forwardBtn) {
       forwardBtn.disabled = !enabled;
-    }
-  }
-
-  private findInPage(): void {
-    console.log('Find in page triggered');
-    if (this.webview) {
-      this.webview.findInPage?.('', { matchCase: false });
-    }
-  }
-
-  zoomIn(): void {
-    console.log('Zoom in triggered');
-    if (this.webview) {
-      const currentZoom = this.webview.getZoomLevel?.() || 0;
-      this.webview.setZoomLevel?.(currentZoom + 1);
-      this.updateZoomDisplay();
-    }
-  }
-
-  zoomOut(): void {
-    console.log('Zoom out triggered');
-    if (this.webview) {
-      const currentZoom = this.webview.getZoomLevel?.() || 0;
-      this.webview.setZoomLevel?.(currentZoom - 1);
-      this.updateZoomDisplay();
-    }
-  }
-
-  resetZoom(): void {
-    console.log('Reset zoom triggered');
-    if (this.webview) {
-      this.webview.setZoomLevel?.(0);
-      this.updateZoomDisplay();
-    }
-  }
-
-  private toggleFullscreen(): void {
-    console.log('Toggle fullscreen triggered');
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.();
-    } else {
-      document.exitFullscreen?.();
-    }
-  }
-
-  private updateZoomDisplay(): void {
-    if (this.webview) {
-      const zoomLevel = this.webview.getZoomLevel?.() || 0;
-      const zoomPercent = Math.round(Math.pow(1.2, zoomLevel) * 100);
-      const zoomDisplay = document.getElementById('zoom-level');
-      if (zoomDisplay) {
-        zoomDisplay.textContent = `${zoomPercent}%`;
-      }
-    }
-  }
-
-  private showFindModal(): void {
-    this.findModal.classList.add('active');
-    this.findInput.focus();
-    this.findInput.select();
-  }
-
-  private hideFindModal(): void {
-    this.findModal.classList.remove('active');
-    this.findInput.value = '';
-    this.findResultsText.textContent = '0 of 0';
-    if (this.currentFindRequestId !== null) {
-      this.webview?.stopFindInPage?.('clearSelection');
-      this.currentFindRequestId = null;
-    }
-  }
-
-  private performFind(): void {
-    const searchText = this.findInput.value.trim();
-    if (searchText && this.webview) {
-      if (this.currentFindRequestId !== null) {
-        this.webview.stopFindInPage('clearSelection', { requestId: this.currentFindRequestId });
-      }
-
-      this.currentFindRequestId = Math.floor(Math.random() * 1000000);
-      this.webview.findInPage(searchText, {
-        matchCase: false,
-        requestId: this.currentFindRequestId
-      });
-    } else {
-      this.findResultsText.textContent = '0 of 0';
-    }
-  }
-
-  private findNext(): void {
-    if (this.webview && this.currentFindRequestId !== null) {
-      this.webview.findInPage('', {
-        findNext: true,
-        matchCase: false,
-        requestId: this.currentFindRequestId
-      });
-    }
-  }
-
-  private findPrevious(): void {
-    if (this.webview && this.currentFindRequestId !== null) {
-      this.webview.findInPage('', {
-        forward: false,
-        findNext: true,
-        matchCase: false,
-        requestId: this.currentFindRequestId
-      });
     }
   }
 }

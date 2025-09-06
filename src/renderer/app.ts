@@ -14,9 +14,6 @@ const DEFAULT_SETTINGS: AppSettings = {
     blurVideos: true,
     blurRadiusPx: 6,
   },
-  adBlocking: {
-    enabled: true,
-  },
   theme: 'light',
   accessibility: {
     highContrast: false,
@@ -180,48 +177,6 @@ class App {
       event.preventDefault();
       this.quickBookmarkCurrentPage();
     }
-
-    // Ctrl/Cmd+F: Find in page
-    if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
-      event.preventDefault();
-      this.findInPage();
-    }
-
-    // Ctrl/Cmd+P: Print
-    if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
-      event.preventDefault();
-      this.printPage();
-    }
-
-    // F11: Toggle fullscreen
-    if (event.key === 'F11') {
-      event.preventDefault();
-      this.toggleFullscreen();
-    }
-
-    // F12: Toggle developer tools
-    if (event.key === 'F12') {
-      event.preventDefault();
-      this.toggleDevTools();
-    }
-
-    // Ctrl/Cmd+Plus: Zoom in
-    if ((event.ctrlKey || event.metaKey) && (event.key === '=' || event.key === '+')) {
-      event.preventDefault();
-      this.zoomIn();
-    }
-
-    // Ctrl/Cmd+Minus: Zoom out
-    if ((event.ctrlKey || event.metaKey) && event.key === '-') {
-      event.preventDefault();
-      this.zoomOut();
-    }
-
-    // Ctrl/Cmd+0: Reset zoom
-    if ((event.ctrlKey || event.metaKey) && event.key === '0') {
-      event.preventDefault();
-      this.resetZoom();
-    }
   }
 
   private toggleBlur(): void {
@@ -303,56 +258,6 @@ class App {
         successMsg.parentNode.removeChild(successMsg);
       }
     }, 2000);
-  }
-
-  // Basic browser features
-  private findInPage(): void {
-    console.log('Find in page triggered');
-    const webview = document.getElementById('browser-webview') as any;
-    if (webview) {
-      // Open browser's native find dialog
-      webview.findInPage?.('', { matchCase: false });
-    }
-  }
-
-  private printPage(): void {
-    console.log('Print page triggered');
-    const webview = document.getElementById('browser-webview') as any;
-    if (webview) {
-      webview.print?.();
-    }
-  }
-
-  private toggleFullscreen(): void {
-    console.log('Toggle fullscreen triggered');
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.();
-    } else {
-      document.exitFullscreen?.();
-    }
-  }
-
-  private toggleDevTools(): void {
-    console.log('Toggle dev tools triggered');
-    const webview = document.getElementById('browser-webview') as any;
-    if (webview) {
-      webview.isDevToolsOpened?.() ? webview.closeDevTools() : webview.openDevTools();
-    }
-  }
-
-  private zoomIn(): void {
-    console.log('Zoom in triggered');
-    this.bottomBar.zoomIn();
-  }
-
-  private zoomOut(): void {
-    console.log('Zoom out triggered');
-    this.bottomBar.zoomOut();
-  }
-
-  private resetZoom(): void {
-    console.log('Reset zoom triggered');
-    this.bottomBar.resetZoom();
   }
 
   // Debug methods

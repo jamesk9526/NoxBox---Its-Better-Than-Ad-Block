@@ -5,22 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NoxBox - Privacy Browser</title>
     <link rel="stylesheet" href="./styles/main.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        /* Material Icons fallback - use Unicode symbols if font doesn't load */
-        .material-icons.fallback-arrow_back::before { content: "←"; }
-        .material-icons.fallback-arrow_forward::before { content: "→"; }
-        .material-icons.fallback-refresh::before { content: "↻"; }
-        .material-icons.fallback-home::before { content: "⌂"; }
-        .material-icons.fallback-star_border::before { content: "☆"; }
-        .material-icons.fallback-search::before { content: "🔍"; }
-        .material-icons.fallback-zoom_out::before { content: "🔍-"; }
-        .material-icons.fallback-zoom_in::before { content: "🔍+"; }
-        .material-icons.fallback-fullscreen::before { content: "⛶"; }
-        .material-icons.fallback-keyboard_arrow_up::before { content: "▲"; }
-        .material-icons.fallback-keyboard_arrow_down::before { content: "▼"; }
-        .material-icons.fallback-close::before { content: "✕"; }
-    </style>
 </head>
 <body>
     <div id="app">
@@ -73,13 +57,10 @@
                     <span class="nav-icon">↻</span>
                 </button>
                 <button id="home-btn" class="nav-btn" aria-label="Go home">
-                    <span class="nav-icon">⌂</span>
+                    <span class="nav-icon">🏠</span>
                 </button>
                 <button id="bookmark-btn" class="nav-btn" aria-label="Bookmark current page">
                     <span class="nav-icon">☆</span>
-                </button>
-                <button id="find-btn" class="nav-btn" aria-label="Find in page">
-                    <span class="nav-icon">🔍</span>
                 </button>
             </div>
             <div class="address-bar">
@@ -91,46 +72,10 @@
                     aria-label="Address bar"
                 />
             </div>
-            <div class="zoom-controls">
-                <button id="zoom-out-btn" class="zoom-btn" aria-label="Zoom out">
-                    <span class="zoom-icon">🔍−</span>
-                </button>
-                <span id="zoom-level">100%</span>
-                <button id="zoom-in-btn" class="zoom-btn" aria-label="Zoom in">
-                    <span class="zoom-icon">🔍+</span>
-                </button>
-                <button id="fullscreen-btn" class="zoom-btn" aria-label="Toggle fullscreen">
-                    <span class="zoom-icon">⛶</span>
-                </button>
+            <div class="status-info">
+                <span id="status-text">Ready</span>
             </div>
         </footer>
-    </div>
-
-    <!-- Find Modal -->
-    <div id="find-modal" class="find-modal">
-        <div class="find-modal-content">
-            <div class="find-input-container">
-                <span class="find-icon">🔍</span>
-                <input
-                    type="text"
-                    id="find-input"
-                    placeholder="Find in page..."
-                    autocomplete="off"
-                />
-                <button id="find-prev-btn" class="find-nav-btn" aria-label="Previous match">
-                    <span>▲</span>
-                </button>
-                <button id="find-next-btn" class="find-nav-btn" aria-label="Next match">
-                    <span>▼</span>
-                </button>
-                <button id="find-close-btn" class="find-close-btn" aria-label="Close find">
-                    <span>✕</span>
-                </button>
-            </div>
-            <div class="find-results">
-                <span id="find-results-text">0 of 0</span>
-            </div>
-        </div>
     </div>
 
     <!-- History Panel -->
@@ -219,14 +164,6 @@
                             step="1"
                         />
                         <span id="blur-radius-value">6px</span>
-                    </div>
-                </section>
-
-                <section class="settings-section">
-                    <h3>Ad Blocking</h3>
-                    <div class="setting-item">
-                        <label for="ad-blocking-toggle">Block Ads</label>
-                        <input type="checkbox" id="ad-blocking-toggle" checked />
                     </div>
                 </section>
 
