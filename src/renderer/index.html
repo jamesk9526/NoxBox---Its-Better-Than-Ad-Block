@@ -40,7 +40,7 @@
         <!-- Main Content Area -->
         <main class="main-content">
             <div class="browser-content">
-                <webview id="browser-webview" src="https://www.google.com" class="browser-webview" title="Browser Content" preload="http://localhost:5174/webview-preload.js"></webview>
+                <webview id="browser-webview" src="https://www.google.com" class="browser-webview" title="Browser Content" preload="./webview-preload.js"></webview>
             </div>
         </main>
 
@@ -61,6 +61,12 @@
                 </button>
                 <button id="bookmark-btn" class="nav-btn" aria-label="Bookmark current page">
                     <span class="nav-icon">☆</span>
+                </button>
+                <button id="mute-btn" class="nav-btn" aria-label="Toggle mute">
+                    <span class="nav-icon">🔇</span>
+                </button>
+                <button id="unblur-mode-btn" class="nav-btn" aria-label="Toggle unblur mode">
+                    <span class="nav-icon">👁️</span>
                 </button>
             </div>
             <div class="address-bar">
@@ -144,7 +150,7 @@
 
             <div class="settings-body">
                 <section class="settings-section">
-                    <h3>Media Blur</h3>
+                    <h3>🎭 Media Blur</h3>
                     <div class="setting-item">
                         <label for="blur-images-toggle">Blur Images</label>
                         <input type="checkbox" id="blur-images-toggle" checked />
@@ -168,7 +174,7 @@
                 </section>
 
                 <section class="settings-section">
-                    <h3>Appearance</h3>
+                    <h3>🎨 Appearance</h3>
                     <div class="setting-item">
                         <label for="theme-select">Theme</label>
                         <select id="theme-select">
@@ -184,7 +190,7 @@
                 </section>
 
                 <section class="settings-section">
-                    <h3>Accessibility</h3>
+                    <h3>♿ Accessibility</h3>
                     <div class="setting-item">
                         <label for="large-text-toggle">Large Text</label>
                         <input type="checkbox" id="large-text-toggle" />
@@ -192,6 +198,19 @@
                     <div class="setting-item">
                         <label for="reduced-motion-toggle">Reduced Motion</label>
                         <input type="checkbox" id="reduced-motion-toggle" />
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3>🛠️ Developer</h3>
+                    <div class="setting-item">
+                        <label for="reset-app-btn">Reset & Restart</label>
+                        <button id="reset-app-btn" class="reset-btn" aria-label="Reset all temporary files and restart app">
+                            🔄 Reset App Data
+                        </button>
+                    </div>
+                    <div class="setting-item">
+                        <small class="dev-warning">⚠️ This will clear all temporary files, settings, and restart the app. Useful for testing first-time user experience.</small>
                     </div>
                 </section>
             </div>

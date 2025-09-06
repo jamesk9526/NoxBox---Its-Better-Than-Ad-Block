@@ -25,7 +25,8 @@ electron_1.contextBridge.exposeInMainWorld('noxboxWebview', {
     },
     // Toggle unblur mode
     toggleUnblurMode: (enabled) => {
-        setupSelectiveUnblur(enabled);
+        // No longer needed - using Ctrl+click instead
+        console.log('[Webview] toggleUnblurMode called but not used (Ctrl+click mode)');
     }
 });
 // Log when DOM is ready
@@ -76,16 +77,12 @@ const injectBlurStyles = () => {
       filter: none !important;
     }
 
-    /* Unlock indicator - only show when unblur mode is active */
-    body.noxbox-unblur-mode img:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode video:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode audio:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode canvas:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode svg:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode picture:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode object:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode embed:not(.media-unlocked)::after {
-      content: "🔓 Click to unlock";
+    /* Unlock indicator */
+    img:not(.media-unlocked)::after, video:not(.media-unlocked)::after,
+    audio:not(.media-unlocked)::after, canvas:not(.media-unlocked)::after,
+    svg:not(.media-unlocked)::after, picture:not(.media-unlocked)::after,
+    object:not(.media-unlocked)::after, embed:not(.media-unlocked)::after {
+      content: "Ctrl+Click to unlock";
       position: absolute;
       top: 8px;
       right: 8px;
@@ -101,27 +98,19 @@ const injectBlurStyles = () => {
       white-space: nowrap;
     }
 
-    body.noxbox-unblur-mode img:hover:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode video:hover:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode audio:hover:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode canvas:hover:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode svg:hover:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode picture:hover:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode object:hover:not(.media-unlocked)::after,
-    body.noxbox-unblur-mode embed:hover:not(.media-unlocked)::after {
+    img:hover:not(.media-unlocked)::after, video:hover:not(.media-unlocked)::after,
+    audio:hover:not(.media-unlocked)::after, canvas:hover:not(.media-unlocked)::after,
+    svg:hover:not(.media-unlocked)::after, picture:hover:not(.media-unlocked)::after,
+    object:hover:not(.media-unlocked)::after, embed:hover:not(.media-unlocked)::after {
       opacity: 1;
     }
 
-    /* Unlocked indicator - show when unblur mode is active */
-    body.noxbox-unblur-mode img.media-unlocked::after,
-    body.noxbox-unblur-mode video.media-unlocked::after,
-    body.noxbox-unblur-mode audio.media-unlocked::after,
-    body.noxbox-unblur-mode canvas.media-unlocked::after,
-    body.noxbox-unblur-mode svg.media-unlocked::after,
-    body.noxbox-unblur-mode picture.media-unlocked::after,
-    body.noxbox-unblur-mode object.media-unlocked::after,
-    body.noxbox-unblur-mode embed.media-unlocked::after {
-      content: "🔒 Click to lock";
+    /* Unlocked indicator */
+    img.media-unlocked::after, video.media-unlocked::after,
+    audio.media-unlocked::after, canvas.media-unlocked::after,
+    svg.media-unlocked::after, picture.media-unlocked::after,
+    object.media-unlocked::after, embed.media-unlocked::after {
+      content: "Ctrl+Click to lock";
       position: absolute;
       top: 8px;
       right: 8px;
@@ -137,14 +126,10 @@ const injectBlurStyles = () => {
       white-space: nowrap;
     }
 
-    body.noxbox-unblur-mode img.media-unlocked:hover::after,
-    body.noxbox-unblur-mode video.media-unlocked:hover::after,
-    body.noxbox-unblur-mode audio.media-unlocked:hover::after,
-    body.noxbox-unblur-mode canvas.media-unlocked:hover::after,
-    body.noxbox-unblur-mode svg.media-unlocked:hover::after,
-    body.noxbox-unblur-mode picture.media-unlocked:hover::after,
-    body.noxbox-unblur-mode object.media-unlocked:hover::after,
-    body.noxbox-unblur-mode embed.media-unlocked:hover::after {
+    img.media-unlocked:hover::after, video.media-unlocked:hover::after,
+    audio.media-unlocked::after, canvas.media-unlocked:hover::after,
+    svg.media-unlocked:hover::after, picture.media-unlocked:hover::after,
+    object.media-unlocked:hover::after, embed.media-unlocked:hover::after {
       opacity: 1;
     }
 
@@ -249,64 +234,10 @@ const injectBlurStyles = () => {
 };
 // Inject styles on load
 injectBlurStyles();
-// Global state for unblur mode
-let isUnblurModeActive = false;
-// Function to update mode indicator
-function updateModeIndicator(enabled) {
-    // Remove existing indicator
-    const existingIndicator = document.getElementById('noxbox-unblur-indicator');
-    if (existingIndicator) {
-        existingIndicator.remove();
-    }
-    // Toggle body class for CSS styling
-    document.body.classList.toggle('noxbox-unblur-mode', enabled);
-    if (enabled) {
-        // Create unblur mode indicator
-        const indicator = document.createElement('div');
-        indicator.id = 'noxbox-unblur-indicator';
-        indicator.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 123, 255, 0.9);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      z-index: 999999;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      pointer-events: none;
-      animation: slideIn 0.3s ease-out;
-    `;
-        indicator.innerHTML = '👁️ Unblur Mode Active<br><small>Click on media to toggle blur</small>';
-        // Add animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-    `;
-        document.head.appendChild(style);
-        document.body.appendChild(indicator);
-        console.log('[Webview] Unblur mode indicator shown');
-    }
-    else {
-        console.log('[Webview] Unblur mode indicator hidden');
-    }
-}
 // Setup selective unblur functionality
-function setupSelectiveUnblur(enabled) {
+function setupSelectiveUnblur() {
     console.log('[Webview] ===== SETUP SELECTIVE UNBLUR CALLED =====');
-    if (typeof enabled === 'boolean') {
-        isUnblurModeActive = enabled;
-        console.log('[Webview] Setting unblur mode to:', enabled);
-        updateModeIndicator(enabled);
-        return;
-    }
-    console.log('[Webview] Setting up button-based selective unblur');
+    console.log('[Webview] Setting up Ctrl+click selective unblur');
     // Debug: Check if media elements exist
     setTimeout(() => {
         const images = document.querySelectorAll('img');
@@ -319,21 +250,23 @@ function setupSelectiveUnblur(enabled) {
     // Click handler for media elements
     document.addEventListener('click', (event) => {
         var _a, _b, _c, _d;
-        console.log('[Webview] Click detected, unblurMode:', isUnblurModeActive, 'target:', (_a = event.target) === null || _a === void 0 ? void 0 : _a.tagName);
-        // Test: Log all clicks
+        console.log('[Webview] Click detected, ctrlKey:', event.ctrlKey, 'target:', (_a = event.target) === null || _a === void 0 ? void 0 : _a.tagName);
+        // Test: Log all clicks regardless of Ctrl key
         console.log('[Webview] Click event details:', {
-            unblurMode: isUnblurModeActive,
+            ctrlKey: event.ctrlKey,
+            altKey: event.altKey,
+            shiftKey: event.shiftKey,
             target: (_b = event.target) === null || _b === void 0 ? void 0 : _b.tagName,
             targetClass: (_c = event.target) === null || _c === void 0 ? void 0 : _c.className,
             targetSrc: (_d = event.target) === null || _d === void 0 ? void 0 : _d.getAttribute('src')
         });
-        // Only handle clicks when unblur mode is active
-        if (!isUnblurModeActive) {
-            console.log('[Webview] Ignoring click - unblur mode not active');
+        // Only handle Ctrl+click
+        if (!event.ctrlKey) {
+            console.log('[Webview] Ignoring click - no Ctrl key');
             return;
         }
         const target = event.target;
-        console.log('[Webview] Unblur mode click detected on:', target.tagName, target.className, target.getAttribute('src'));
+        console.log('[Webview] Ctrl+click detected on:', target.tagName, target.className, target.getAttribute('src'));
         // Check if clicked element is media or contains media
         const mediaSelectors = `
       img, video, audio, canvas, svg, picture, object, embed,
@@ -363,7 +296,7 @@ function setupSelectiveUnblur(enabled) {
             saveUnlockedMedia();
         }
         else {
-            console.log('[Webview] Click target does not match media selectors');
+            console.log('[Webview] Ctrl+click target does not match media selectors');
         }
     });
     // Load previously unlocked media from session storage
@@ -415,9 +348,7 @@ function loadUnlockedMedia() {
         console.warn('[Webview] Failed to load unlocked media:', error);
     }
 }
-// Expose setupSelectiveUnblur globally for the main renderer to call
-window.setupSelectiveUnblur = setupSelectiveUnblur;
-// Setup selective unblur initially
+// Setup selective unblur
 setupSelectiveUnblur();
 // Watch for new images/videos
 const observer = new MutationObserver((mutations) => {
@@ -594,5 +525,4 @@ function setupMediaInterception() {
 }
 // Setup comprehensive media detection
 setupMediaInterception();
-console.log('[Webview] ===== WEBVIEW PRELOAD COMPLETE =====');
 console.log('[Webview] Preload setup complete');

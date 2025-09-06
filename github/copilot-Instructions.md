@@ -244,9 +244,9 @@ export class MediaBlurController {
   --panel: #ffffff;
   --accent: #0a6cf6;
   --muted: #6b7a90;
-  --blur-radius: 6px;
+  --blur-radius: 10px;
   --radius: 8px;
-  --shadow: 0 6px 18px rgba(11,27,43,0.06);
+  --shadow: 0 10px 18px rgba(11,27,43,0.06);
 }
 ```
 

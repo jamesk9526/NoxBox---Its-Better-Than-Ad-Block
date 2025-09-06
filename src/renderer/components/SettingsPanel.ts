@@ -129,6 +129,7 @@ export class SettingsPanel {
 
     blurRadiusSlider?.addEventListener('input', () => {
       const value = parseInt(blurRadiusSlider.value);
+      console.log('SettingsPanel: Blur radius slider changed to:', value);
       if (blurRadiusValue) {
         blurRadiusValue.textContent = `${value}px`;
       }
@@ -164,13 +165,23 @@ export class SettingsPanel {
         accessibility: { ...this.currentSettings.accessibility, reducedMotion: reducedMotionToggle.checked }
       });
     });
+
+    // Developer reset button
+    const resetAppBtn = document.getElementById('reset-app-btn');
+    resetAppBtn?.addEventListener('click', () => {
+      this.handleAppReset();
+    });
   }
 
   private updateMediaBlurSettings(options: Partial<MediaBlurOptions>): void {
+    console.log('SettingsPanel: updateMediaBlurSettings called with:', options);
     const newSettings = {
       mediaBlur: { ...this.currentSettings.mediaBlur, ...options }
     };
+    console.log('SettingsPanel: Previous settings:', this.currentSettings.mediaBlur);
+    console.log('SettingsPanel: New settings:', newSettings.mediaBlur);
     this.currentSettings = { ...this.currentSettings, ...newSettings };
+    console.log('SettingsPanel: Calling onSettingsChange callback');
     this.onSettingsChange(newSettings);
   }
 
@@ -216,32 +227,42 @@ export class SettingsPanel {
   show(): void {
     console.log('SettingsPanel.show() called, current isVisible:', this.isVisible);
     console.log('Element before showing:', this.element);
-    console.log('Element style.display before:', this.element.style.display);
 
-    // Use style.display instead of hidden attribute for more reliable control
+    // Use CSS classes for smooth animations
     this.element.style.display = 'flex';
+    // Force reflow to ensure display change takes effect before adding visible class
+    this.element.offsetHeight;
+    this.element.classList.add('visible');
     this.isVisible = true;
 
     console.log('Element after showing:', this.element);
-    console.log('Element style.display after:', this.element.style.display);
+    console.log('Element classes:', this.element.className);
 
-    // Focus first input
-    const firstInput = this.element.querySelector('input, select') as HTMLElement;
-    console.log('Focusing first input:', firstInput);
-    firstInput?.focus();
+    // Focus first input after animation starts
+    setTimeout(() => {
+      const firstInput = this.element.querySelector('input, select') as HTMLElement;
+      console.log('Focusing first input:', firstInput);
+      firstInput?.focus();
+    }, 100);
   }
 
   hide(): void {
     console.log('SettingsPanel.hide() called, current isVisible:', this.isVisible);
     console.log('Element before hiding:', this.element);
-    console.log('Element style.display before:', this.element.style.display);
 
-    // Use style.display instead of hidden attribute for more reliable control
-    this.element.style.display = 'none';
+    // Remove visible class for smooth animation
+    this.element.classList.remove('visible');
     this.isVisible = false;
 
+    // Hide element completely after animation completes
+    setTimeout(() => {
+      if (!this.isVisible) { // Double-check in case show() was called during animation
+        this.element.style.display = 'none';
+      }
+    }, 300); // Match the CSS transition duration
+
     console.log('Element after hiding:', this.element);
-    console.log('Element style.display after:', this.element.style.display);
+    console.log('Element classes:', this.element.className);
 
     // Return focus to settings button
     const settingsBtn = document.getElementById('settings-btn');
@@ -274,5 +295,316 @@ export class SettingsPanel {
 
   getCurrentSettings(): AppSettings {
     return { ...this.currentSettings };
+  }
+
+  updateCurrentSettings(settings: AppSettings): void {
+    console.log('SettingsPanel: updateCurrentSettings called with:', settings);
+    this.currentSettings = { ...settings };
+    this.updateUI();
+  }
+
+  private async handleAppReset(): Promise<void> {
+    const confirmed = await this.showResetConfirmation();
+    if (confirmed) {
+      this.performReset();
+    }
+  }
+
+  private async showResetConfirmation(): Promise<boolean> {
+    return new Promise((resolve) => {
+      // Create a beautiful confirmation modal
+      const modal = document.createElement('div');
+      modal.className = 'reset-confirmation-modal';
+      modal.innerHTML = `
+        <div class="reset-modal-backdrop"></div>
+        <div class="reset-modal-content">
+          <div class="reset-modal-header">
+            <div class="reset-icon">🔄</div>
+            <h3>Reset Application</h3>
+          </div>
+          <div class="reset-modal-body">
+            <p>This will reset all application data and restart NoxBox:</p>
+            <ul class="reset-items">
+              <li>✨ Clear all settings</li>
+              <li>🗂️ Remove temporary files</li>
+              <li>📱 Reset to first-time experience</li>
+              <li>🔄 Restart the application</li>
+            </ul>
+            <div class="reset-warning">
+              <strong>⚠️ Warning:</strong> This action cannot be undone.
+            </div>
+          </div>
+          <div class="reset-modal-actions">
+            <button class="reset-cancel-btn" id="reset-cancel">Cancel</button>
+            <button class="reset-confirm-btn" id="reset-confirm">Reset & Restart</button>
+          </div>
+        </div>
+      `;
+
+      // Add modal styles
+      const styles = document.createElement('style');
+      styles.textContent = `
+        .reset-confirmation-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 999999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .reset-modal-backdrop {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+        }
+
+        .reset-modal-content {
+          background: var(--bg-primary);
+          border-radius: 16px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          max-width: 400px;
+          width: 90%;
+          position: relative;
+          overflow: hidden;
+          animation: slideUp 0.3s ease-out;
+        }
+
+        .reset-modal-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 24px;
+          text-align: center;
+        }
+
+        .reset-icon {
+          font-size: 3em;
+          margin-bottom: 12px;
+          animation: spin 2s linear infinite;
+        }
+
+        .reset-modal-header h3 {
+          margin: 0;
+          font-size: 1.4em;
+          font-weight: 600;
+        }
+
+        .reset-modal-body {
+          padding: 24px;
+        }
+
+        .reset-modal-body p {
+          margin: 0 0 16px 0;
+          color: var(--text-primary);
+          font-weight: 500;
+        }
+
+        .reset-items {
+          list-style: none;
+          padding: 0;
+          margin: 0 0 20px 0;
+        }
+
+        .reset-items li {
+          padding: 8px 0;
+          color: var(--text-secondary);
+          font-size: 0.95em;
+        }
+
+        .reset-warning {
+          background: rgba(255, 193, 7, 0.1);
+          border: 1px solid rgba(255, 193, 7, 0.3);
+          border-radius: 8px;
+          padding: 12px;
+          color: #856404;
+          font-size: 0.9em;
+        }
+
+        .reset-modal-actions {
+          padding: 24px;
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
+          background: var(--bg-secondary);
+        }
+
+        .reset-cancel-btn, .reset-confirm-btn {
+          padding: 10px 20px;
+          border: none;
+          border-radius: 8px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .reset-cancel-btn {
+          background: var(--bg-tertiary);
+          color: var(--text-secondary);
+        }
+
+        .reset-cancel-btn:hover {
+          background: var(--border-color);
+        }
+
+        .reset-confirm-btn {
+          background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+          color: white;
+        }
+
+        .reset-confirm-btn:hover {
+          background: linear-gradient(135deg, #ee5a5a 0%, #dc4444 100%);
+          transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+          from { transform: translateY(30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `;
+
+      document.head.appendChild(styles);
+      document.body.appendChild(modal);
+
+      // Event listeners
+      const cancelBtn = modal.querySelector('#reset-cancel');
+      const confirmBtn = modal.querySelector('#reset-confirm');
+      const backdrop = modal.querySelector('.reset-modal-backdrop');
+
+      const cleanup = () => {
+        document.body.removeChild(modal);
+        document.head.removeChild(styles);
+      };
+
+      cancelBtn?.addEventListener('click', () => {
+        cleanup();
+        resolve(false);
+      });
+
+      confirmBtn?.addEventListener('click', () => {
+        cleanup();
+        resolve(true);
+      });
+
+      backdrop?.addEventListener('click', () => {
+        cleanup();
+        resolve(false);
+      });
+
+      // ESC key to cancel
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          cleanup();
+          document.removeEventListener('keydown', handleEsc);
+          resolve(false);
+        }
+      };
+      document.addEventListener('keydown', handleEsc);
+    });
+  }
+
+  private performReset(): void {
+    try {
+      // Clear all localStorage (this will also clear onboarding completion flag)
+      localStorage.clear();
+      
+      // Clear sessionStorage
+      sessionStorage.clear();
+      
+      // Show restart message
+      this.showRestartMessage();
+      
+      // Restart the app after a short delay
+      setTimeout(() => {
+        if ((window as any).appApi && (window as any).appApi.restartApp) {
+          (window as any).appApi.restartApp();
+        } else {
+          // Fallback: reload the page
+          window.location.reload();
+        }
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Failed to reset app:', error);
+      alert('Failed to reset application. Please try again.');
+    }
+  }
+
+  private showRestartMessage(): void {
+    // Create restart message overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'restart-overlay';
+    overlay.innerHTML = `
+      <div class="restart-content">
+        <div class="restart-spinner"></div>
+        <h3>Restarting NoxBox...</h3>
+        <p>Application data has been reset</p>
+      </div>
+    `;
+
+    // Add restart styles
+    const styles = document.createElement('style');
+    styles.textContent = `
+      .restart-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999999;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .restart-content {
+        text-align: center;
+        color: white;
+      }
+
+      .restart-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        margin: 0 auto 24px;
+        animation: spin 1s linear infinite;
+      }
+
+      .restart-content h3 {
+        font-size: 1.8em;
+        margin: 0 0 12px 0;
+        font-weight: 600;
+      }
+
+      .restart-content p {
+        font-size: 1.1em;
+        margin: 0;
+        opacity: 0.9;
+      }
+    `;
+
+    document.head.appendChild(styles);
+    document.body.appendChild(overlay);
   }
 }

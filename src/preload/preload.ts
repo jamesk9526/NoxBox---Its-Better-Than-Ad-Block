@@ -20,6 +20,9 @@ contextBridge.exposeInMainWorld('appApi', {
   // Open URL in system browser
   openInBrowser: (url: string) => ipcRenderer.invoke('open-in-browser', url),
 
+  // App controls
+  restartApp: () => ipcRenderer.invoke('app:restart'),
+
   // Version info
   getVersions: () => ({
     node: process.versions.node,

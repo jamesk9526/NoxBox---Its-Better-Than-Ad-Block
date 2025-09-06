@@ -6,6 +6,8 @@ export class BottomBar {
   private webview: any; // Electron webview element
   private historyManager: HistoryManager;
   private currentUrl: string = '';
+  private isMuted: boolean = true; // Start muted by default
+  private isUnblurMode: boolean = false; // Start with unblur mode off
 
   constructor() {
     console.log('BottomBar constructor called');
@@ -27,13 +29,15 @@ export class BottomBar {
     const refreshBtn = document.getElementById('refresh-btn');
     const homeBtn = document.getElementById('home-btn');
     const bookmarkBtn = document.getElementById('bookmark-btn');
+    const muteBtn = document.getElementById('mute-btn');
 
     console.log('Navigation buttons found:', {
       back: !!backBtn,
       forward: !!forwardBtn,
       refresh: !!refreshBtn,
       home: !!homeBtn,
-      bookmark: !!bookmarkBtn
+      bookmark: !!bookmarkBtn,
+      mute: !!muteBtn
     });
 
     backBtn?.addEventListener('click', (e) => {
@@ -64,6 +68,21 @@ export class BottomBar {
       console.log('Bookmark button clicked');
       e.preventDefault();
       this.bookmarkCurrentPage();
+    });
+
+    muteBtn?.addEventListener('click', (e) => {
+      console.log('Mute button clicked');
+      e.preventDefault();
+      this.toggleMute();
+    });
+
+    const unblurModeBtn = document.getElementById('unblur-mode-btn');
+    console.log('Unblur mode button found:', !!unblurModeBtn);
+    
+    unblurModeBtn?.addEventListener('click', (e) => {
+      console.log('Unblur mode button clicked');
+      e.preventDefault();
+      this.toggleUnblurMode();
     });
 
     // Address bar
@@ -113,6 +132,7 @@ export class BottomBar {
           }
         } catch {}
         this.injectBlurStyles();
+        this.injectPreloadScript();
         this.updateAddressBar();
         this.updateNavigationButtons();
 
@@ -423,7 +443,7 @@ export class BottomBar {
               color: white;
               border: none;
               padding: 12px 24px;
-              border-radius: 6px;
+              border-radius: 10px;
               cursor: pointer;
               font-size: 16px;
               margin: 10px;
@@ -551,7 +571,7 @@ export class BottomBar {
             color: white;
             border: none;
             padding: 12px 24px;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
             margin: 10px;
@@ -667,6 +687,95 @@ export class BottomBar {
     }
   }
 
+  private updateMuteButton(): void {
+    const muteBtn = document.getElementById('mute-btn');
+    if (muteBtn) {
+      const icon = muteBtn.querySelector('.nav-icon');
+      if (icon) {
+        icon.textContent = this.isMuted ? '🔇' : '🔊';
+      }
+      muteBtn.setAttribute('aria-label', this.isMuted ? 'Unmute videos' : 'Mute videos');
+    }
+  }
+
+  private toggleMute(): void {
+    console.log('Toggling mute state');
+    this.isMuted = !this.isMuted;
+    this.muteAllVideos(this.isMuted);
+    this.updateMuteButton();
+  }
+
+  private toggleUnblurMode(): void {
+    console.log('Toggling unblur mode');
+    this.isUnblurMode = !this.isUnblurMode;
+    this.updateUnblurModeButton();
+    this.setUnblurModeInWebview(this.isUnblurMode);
+  }
+
+  private updateUnblurModeButton(): void {
+    const unblurModeBtn = document.getElementById('unblur-mode-btn');
+    if (unblurModeBtn) {
+      const icon = unblurModeBtn.querySelector('.nav-icon');
+      if (icon) {
+        icon.textContent = this.isUnblurMode ? '👁️‍🗨️' : '👁️';
+      }
+      unblurModeBtn.setAttribute('aria-label', this.isUnblurMode ? 'Exit unblur mode' : 'Enter unblur mode');
+      unblurModeBtn.classList.toggle('active', this.isUnblurMode);
+    }
+  }
+
+  private setUnblurModeInWebview(enabled: boolean): void {
+    console.log('Setting unblur mode in webview:', enabled);
+    if (this.webview) {
+      try {
+        const script = `
+          if (window.setupSelectiveUnblur) {
+            window.setupSelectiveUnblur(${enabled});
+            console.log('Unblur mode set to:', ${enabled});
+          } else {
+            console.warn('setupSelectiveUnblur function not available');
+          }
+        `;
+        
+        this.webview.executeJavaScript?.(script).then(() => {
+          console.log('Unblur mode script executed successfully');
+        }).catch((error: any) => {
+          console.warn('Failed to execute unblur mode script:', error);
+        });
+      } catch (error) {
+        console.warn('Failed to set unblur mode in webview:', error);
+      }
+    }
+  }
+
+  private muteAllVideos(muted: boolean): void {
+    console.log('Muting all videos:', muted);
+    if (this.webview) {
+      try {
+        // Execute JavaScript in the webview to mute/unmute all videos
+        const script = `
+          (function() {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+              video.muted = ${muted};
+              video.volume = ${muted ? 0 : 1};
+              console.log('Video muted state set to:', ${muted});
+            });
+            return videos.length;
+          })();
+        `;
+        
+        this.webview.executeJavaScript?.(script).then((count: number) => {
+          console.log('Muted/unmuted', count, 'videos');
+        }).catch((error: any) => {
+          console.warn('Failed to execute mute script:', error);
+        });
+      } catch (error) {
+        console.warn('Failed to mute videos:', error);
+      }
+    }
+  }
+
   private addToHistory(url: string): void {
     console.log('Adding to history:', url);
     if (url && url !== 'about:blank' && !url.startsWith('data:')) {
@@ -725,12 +834,209 @@ export class BottomBar {
     return url.startsWith('data:');
   }
 
-  private async injectBlurStyles(): Promise<void> {
+  private async injectBlurStyles(blurRadiusPx?: number): Promise<void> {
     try {
-      const blurRadius = getComputedStyle(document.documentElement).getPropertyValue('--blur-radius') || '6px';
-      const css = `img,video{filter: blur(${blurRadius.trim()}) !important; transition: filter 180ms ease;} img:hover,video:hover{filter:none !important;}`;
+      // Use provided blur radius or read from CSS variable as fallback
+      let blurRadiusValue = blurRadiusPx;
+      if (blurRadiusValue === undefined) {
+        const blurRadius = getComputedStyle(document.documentElement).getPropertyValue('--blur-radius') || '10px';
+        blurRadiusValue = parseInt(blurRadius.replace('px', '')) || 20;
+      }
+      
+      console.log('BottomBar: Injecting blur styles with radius:', blurRadiusValue + 'px');
+      
+      // Update webview blur radius via the exposed function
+      try {
+        await this.webview.executeJavaScript(`
+          if (window.updateBlurRadius) {
+            window.updateBlurRadius(${blurRadiusValue});
+          }
+        `);
+      } catch (error) {
+        console.warn('Failed to update webview blur radius:', error);
+      }
+      
+      const css = `
+        /* ===== COMPREHENSIVE MEDIA BLUR SYSTEM WITH SELECTIVE UNBLUR ===== */
+
+        /* Standard media elements */
+        img, video, audio, canvas, svg, picture, object, embed {
+          filter: blur(${blurRadiusValue}px) !important;
+          transition: filter 180ms ease;
+          cursor: pointer;
+          position: relative;
+        }
+
+        /* Don't blur unlocked media */
+        img.media-unlocked, video.media-unlocked, audio.media-unlocked,
+        canvas.media-unlocked, svg.media-unlocked, picture.media-unlocked,
+        object.media-unlocked, embed.media-unlocked {
+          filter: none !important;
+          cursor: default;
+        }
+
+        /* Hover effects for blurred media */
+        img:hover:not(.media-unlocked), video:hover:not(.media-unlocked),
+        audio:hover:not(.media-unlocked), canvas:hover:not(.media-unlocked),
+        svg:hover:not(.media-unlocked), picture:hover:not(.media-unlocked),
+        object:hover:not(.media-unlocked), embed:hover:not(.media-unlocked) {
+          filter: none !important;
+        }
+
+        /* Unlock indicator */
+        img:not(.media-unlocked)::after, video:not(.media-unlocked)::after,
+        audio:not(.media-unlocked)::after, canvas:not(.media-unlocked)::after,
+        svg:not(.media-unlocked)::after, picture:not(.media-unlocked)::after,
+        object:not(.media-unlocked)::after, embed:not(.media-unlocked)::after {
+          content: "🔓 Click to unlock";
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: rgba(0,0,0,0.8);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          pointer-events: none;
+          z-index: 10000;
+          white-space: nowrap;
+        }
+
+        img:hover:not(.media-unlocked)::after, video:hover:not(.media-unlocked)::after,
+        audio:hover:not(.media-unlocked)::after, canvas:hover:not(.media-unlocked)::after,
+        svg:hover:not(.media-unlocked)::after, picture:hover:not(.media-unlocked)::after,
+        object:hover:not(.media-unlocked)::after, embed:hover:not(.media-unlocked)::after {
+          opacity: 1;
+        }
+
+        /* Unlocked indicator */
+        img.media-unlocked::after, video.media-unlocked::after,
+        audio.media-unlocked::after, canvas.media-unlocked::after,
+        svg.media-unlocked::after, picture.media-unlocked::after,
+        object.media-unlocked::after, embed.media-unlocked::after {
+          content: "🔒 Click to lock";
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: rgba(0,123,255,0.9);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          pointer-events: none;
+          z-index: 10000;
+          white-space: nowrap;
+        }
+
+        img.media-unlocked:hover::after, video.media-unlocked:hover::after,
+        audio.media-unlocked::after, canvas.media-unlocked:hover::after,
+        svg.media-unlocked:hover::after, picture.media-unlocked:hover::after,
+        object.media-unlocked:hover::after, embed.media-unlocked:hover::after {
+          opacity: 1;
+        }
+
+        /* Elements with media-related attributes */
+        [src], [data-src], [data-original], [data-lazy-src], [data-srcset] {
+          filter: blur(${blurRadiusValue}px) !important;
+        }
+        [src]:hover, [data-src]:hover, [data-original]:hover, [data-lazy-src]:hover, [data-srcset]:hover {
+          filter: none !important;
+        }
+
+        /* Don't blur unlocked elements with media attributes */
+        [src].media-unlocked, [data-src].media-unlocked, [data-original].media-unlocked,
+        [data-lazy-src].media-unlocked, [data-srcset].media-unlocked {
+          filter: none !important;
+        }
+
+        /* Background images */
+        [style*="background-image"], [style*="background"] {
+          filter: blur(${blurRadiusValue}px) !important;
+        }
+        [style*="background-image"]:hover, [style*="background"]:hover {
+          filter: none !important;
+        }
+
+        /* Don't blur unlocked background images */
+        [style*="background-image"].media-unlocked, [style*="background"].media-unlocked {
+          filter: none !important;
+        }
+
+        /* Media containers and players */
+        .media-element, .video-player, .audio-player, .image-container,
+        [data-testid*="video"], [data-testid*="media"], [data-testid*="image"],
+        [class*="video"], [class*="media"], [class*="image"], [class*="player"] {
+          filter: blur(${blurRadiusValue}px) !important;
+        }
+        .media-element:hover, .video-player:hover, .audio-player:hover, .image-container:hover,
+        [data-testid*="video"]:hover, [data-testid*="media"]:hover, [data-testid*="image"]:hover,
+        [class*="video"]:hover, [class*="media"]:hover, [class*="image"]:hover, [class*="player"]:hover {
+          filter: none !important;
+        }
+
+        /* Don't blur unlocked media containers */
+        .media-element.media-unlocked, .video-player.media-unlocked, .audio-player.media-unlocked,
+        .image-container.media-unlocked, [data-testid*="video"].media-unlocked,
+        [data-testid*="media"].media-unlocked, [data-testid*="image"].media-unlocked,
+        [class*="video"].media-unlocked, [class*="media"].media-unlocked,
+        [class*="image"].media-unlocked, [class*="player"].media-unlocked {
+          filter: none !important;
+        }
+
+        /* Reddit specific */
+        video[aria-label="video player"], video[src*="redd.it"], video[poster*="redd.it"],
+        video[playsinline][preload][tabindex] {
+          filter: blur(${blurRadiusValue}px) !important;
+        }
+        video[aria-label="video player"]:hover, video[src*="redd.it"]:hover, video[poster*="redd.it"]:hover,
+        video[playsinline][preload][tabindex]:hover {
+          filter: none !important;
+        }
+
+        /* Don't blur unlocked Reddit videos */
+        video[aria-label="video player"].media-unlocked, video[src*="redd.it"].media-unlocked,
+        video[poster*="redd.it"].media-unlocked, video[playsinline][preload][tabindex].media-unlocked {
+          filter: none !important;
+        }
+
+        /* Social media platforms */
+        [class*="instagram"], [class*="twitter"], [class*="facebook"], [class*="tiktok"],
+        [class*="youtube"], [class*="vimeo"], [class*="twitch"] {
+          filter: blur(${blurRadiusValue}px) !important;
+        }
+        [class*="instagram"]:hover, [class*="twitter"]:hover, [class*="facebook"]:hover, [class*="tiktok"]:hover,
+        [class*="youtube"]:hover, [class*="vimeo"]:hover, [class*="twitch"]:hover {
+          filter: none !important;
+        }
+
+        /* Don't blur unlocked social media */
+        [class*="instagram"].media-unlocked, [class*="twitter"].media-unlocked,
+        [class*="facebook"].media-unlocked, [class*="tiktok"].media-unlocked,
+        [class*="youtube"].media-unlocked, [class*="vimeo"].media-unlocked,
+        [class*="twitch"].media-unlocked {
+          filter: none !important;
+        }
+
+        /* Generic media detection */
+        [role="img"], .media-blur-target, [data-media], [data-image], [data-video] {
+          filter: blur(${blurRadiusValue}px) !important;
+        }
+        [role="img"]:hover, .media-blur-target:hover, [data-media]:hover, [data-image]:hover, [data-video]:hover {
+          filter: none !important;
+        }
+
+        /* Don't blur unlocked generic media */
+        [role="img"].media-unlocked, .media-blur-target.media-unlocked,
+        [data-media].media-unlocked, [data-image].media-unlocked, [data-video].media-unlocked {
+          filter: none !important;
+        }
+      `;
       await this.webview.insertCSS?.(css);
-      console.log('Injected blur CSS into webview');
+      console.log('Injected comprehensive blur CSS with selective unblur into webview');
     } catch (e) {
       console.warn('Failed to inject blur CSS:', e);
     }
@@ -738,13 +1044,28 @@ export class BottomBar {
 
   private updateStatus(message: string): void {
     const statusText = document.getElementById('status-text');
-    if (statusText) {
+    const statusInfo = document.querySelector('.status-info');
+    
+    if (statusText && statusInfo) {
       statusText.textContent = message;
+      
+      // Set appropriate data attribute for styling
+      if (message.toLowerCase().includes('loading')) {
+        statusInfo.setAttribute('data-status', 'loading');
+      } else if (message.toLowerCase().includes('blocked') || message.toLowerCase().includes('error') || message.toLowerCase().includes('fail')) {
+        statusInfo.setAttribute('data-status', 'error');
+      } else if (message.toLowerCase().includes('ready')) {
+        statusInfo.setAttribute('data-status', 'ready');
+      } else {
+        statusInfo.removeAttribute('data-status');
+      }
+      
       // Clear status after 3 seconds for non-error messages
       if (message !== 'Site blocked iframe embedding') {
         setTimeout(() => {
           if (statusText.textContent === message) {
             statusText.textContent = 'Ready';
+            statusInfo.setAttribute('data-status', 'ready');
           }
         }, 3000);
       }
@@ -774,5 +1095,48 @@ export class BottomBar {
     if (forwardBtn) {
       forwardBtn.disabled = !enabled;
     }
+  }
+
+  private async injectPreloadScript(): Promise<void> {
+    try {
+      // Read the preload script content
+      const response = await fetch('/webview-preload.js');
+      const scriptContent = await response.text();
+
+      // Execute the script in the webview context
+      await this.webview.executeJavaScript(scriptContent);
+      console.log('Injected preload script into webview');
+    } catch (error) {
+      console.warn('Failed to inject preload script:', error);
+      // Fallback: try to setup a minimal unblur function
+      try {
+        const fallbackScript = `
+          window.setupSelectiveUnblur = function(enabled) {
+            console.log('[Webview] Fallback setupSelectiveUnblur called with:', enabled);
+            document.body.classList.toggle('noxbox-unblur-mode', enabled);
+          };
+        `;
+        await this.webview.executeJavaScript(fallbackScript);
+        console.log('Injected fallback unblur script');
+      } catch (fallbackError) {
+        console.warn('Failed to inject fallback script:', fallbackError);
+      }
+    }
+  }
+
+  /**
+   * Update blur styles in the webview when blur settings change
+   */
+  public async updateBlurStyles(blurRadiusPx?: number): Promise<void> {
+    console.log('BottomBar: updateBlurStyles called with blur radius:', blurRadiusPx);
+    
+    // If no blur radius is provided, read from CSS variable
+    if (blurRadiusPx === undefined) {
+      const blurRadius = getComputedStyle(document.documentElement).getPropertyValue('--blur-radius') || '10px';
+      blurRadiusPx = parseInt(blurRadius.replace('px', '')) || 20;
+      console.log('BottomBar: Read blur radius from CSS variable:', blurRadiusPx);
+    }
+    
+    await this.injectBlurStyles(blurRadiusPx);
   }
 }

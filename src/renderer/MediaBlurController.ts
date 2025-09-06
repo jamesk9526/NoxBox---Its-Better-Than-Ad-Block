@@ -1,15 +1,13 @@
-import { MediaBlurOptions, AdBlockOptions } from '../types';
+import { MediaBlurOptions } from '../types';
 
 export class MediaBlurController {
   private options: MediaBlurOptions;
-  private adBlockOptions: AdBlockOptions;
   private mutationObserver: MutationObserver;
   private isActive = false;
   private showHoverReveal = false;
 
-  constructor(initialOptions: MediaBlurOptions, adBlockOptions: AdBlockOptions, showHoverReveal = false) {
+  constructor(initialOptions: MediaBlurOptions, showHoverReveal = false) {
     this.options = { ...initialOptions };
-    this.adBlockOptions = { ...adBlockOptions };
     this.showHoverReveal = showHoverReveal;
     this.mutationObserver = new MutationObserver(this.handleMutations.bind(this));
   }
@@ -153,6 +151,11 @@ export class MediaBlurController {
    */
   private updateCSSVariables(): void {
     const root = document.documentElement;
+    console.log('MediaBlurController: Setting --blur-radius to:', `${this.options.blurRadiusPx}px`);
     root.style.setProperty('--blur-radius', `${this.options.blurRadiusPx}px`);
+    
+    // Verify it was set
+    const setRadius = getComputedStyle(root).getPropertyValue('--blur-radius');
+    console.log('MediaBlurController: Verified --blur-radius is now:', setRadius);
   }
 }

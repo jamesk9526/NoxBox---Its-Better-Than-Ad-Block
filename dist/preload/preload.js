@@ -17,17 +17,8 @@ electron_1.contextBridge.exposeInMainWorld('appApi', {
     navigateTo: (url) => electron_1.ipcRenderer.invoke('navigation:navigate', url),
     // Open URL in system browser
     openInBrowser: (url) => electron_1.ipcRenderer.invoke('open-in-browser', url),
-    // Privacy / Cookie management
-    clearCookies: () => electron_1.ipcRenderer.invoke('privacy:clear-cookies'),
-    clearCache: () => electron_1.ipcRenderer.invoke('privacy:clear-cache'),
-    clearStorage: () => electron_1.ipcRenderer.invoke('privacy:clear-storage'),
-    // Download manager API
-    onDownloadEvent: (listener) => {
-        const handler = (_, data) => listener(_, data);
-        electron_1.ipcRenderer.on('download:event', handler);
-        return () => electron_1.ipcRenderer.removeListener('download:event', handler);
-    },
-    downloadControl: (id, action) => electron_1.ipcRenderer.invoke('download:control', { id, action }),
+    // App controls
+    restartApp: () => electron_1.ipcRenderer.invoke('app:restart'),
     // Version info
     getVersions: () => ({
         node: process.versions.node,

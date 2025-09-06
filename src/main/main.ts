@@ -105,6 +105,13 @@ ipcMain.handle('open-in-browser', async (event, url: string) => {
   }
 });
 
+// Handle app restart
+ipcMain.handle('app:restart', () => {
+  console.log('Restarting application...');
+  app.relaunch();
+  app.exit(0);
+});
+
 // Security: Prevent navigation to external URLs
 app.on('web-contents-created', (event, contents) => {
   contents.on('will-navigate', (event, navigationUrl) => {

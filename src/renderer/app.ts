@@ -5,6 +5,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { BookmarkManager } from './components/BookmarkManager';
 import { HistoryManager } from './components/HistoryManager';
 import { HistoryPanel } from './components/HistoryPanel';
+import { OnboardingFlow } from './components/OnboardingFlow';
 import { AppSettings, MediaBlurOptions } from '../types';
 
 // Default settings
@@ -52,6 +53,11 @@ class App {
     // Start media blur controller
     this.mediaBlurController.start();
 
+    // Apply initial blur settings to webview
+    setTimeout(() => {
+      this.bottomBar.updateBlurStyles(this.settings.mediaBlur.blurRadiusPx);
+    }, 1000); // Give webview time to load
+
     // Initialize history panel after DOM is ready
     this.historyPanel = new HistoryPanel(this.historyManager);
 
@@ -60,6 +66,16 @@ class App {
 
     // Set up event listeners
     this.setupEventListeners();
+
+    // Sync loaded settings to SettingsPanel
+    setTimeout(() => {
+      this.settingsPanel.updateCurrentSettings(this.settings);
+    }, 100);
+
+    // Show onboarding if it's the first time
+    setTimeout(() => {
+      OnboardingFlow.show();
+    }, 500);
 
     console.log('NoxBox initialized with settings:', this.settings);
   }
@@ -189,9 +205,19 @@ class App {
   }
 
   updateMediaBlurOptions(options: Partial<MediaBlurOptions>): void {
+    console.log('App: updateMediaBlurOptions called with:', options);
+    console.log('App: Previous settings:', this.settings.mediaBlur);
     this.settings.mediaBlur = { ...this.settings.mediaBlur, ...options };
+    console.log('App: New settings:', this.settings.mediaBlur);
     this.mediaBlurController.updateOptions(options);
     this.saveSettings();
+    
+    // Update webview blur styles with the new blur radius
+    const blurRadius = options.blurRadiusPx || this.settings.mediaBlur.blurRadiusPx;
+    console.log('App: Calling bottomBar.updateBlurStyles() with blur radius:', blurRadius);
+    this.bottomBar.updateBlurStyles(blurRadius).catch(error => {
+      console.warn('Failed to update webview blur styles:', error);
+    });
   }
 
   updateSettings(newSettings: Partial<AppSettings>): void {
@@ -202,6 +228,13 @@ class App {
     // Update hover reveal setting if it changed
     if (newSettings.ui?.showHoverReveal !== undefined) {
       this.mediaBlurController.updateHoverReveal(newSettings.ui.showHoverReveal);
+    }
+
+    // Update webview blur styles if media blur settings changed
+    if (newSettings.mediaBlur) {
+      this.bottomBar.updateBlurStyles().catch(error => {
+        console.warn('Failed to update webview blur styles:', error);
+      });
     }
 
     this.saveSettings();
