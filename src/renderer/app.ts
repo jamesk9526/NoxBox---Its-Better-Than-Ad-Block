@@ -16,6 +16,8 @@ const DEFAULT_SETTINGS: AppSettings = {
     blurRadiusPx: 25,
   },
   theme: 'light',
+  searchEngine: 'google',
+  homePage: '/home.html', // Custom NoxBox home page
   accessibility: {
     highContrast: false,
     largeText: false,
@@ -43,7 +45,7 @@ class App {
     this.bookmarkManager = new BookmarkManager((url) => this.navigateToUrl(url));
     this.historyManager = HistoryManager.getInstance();
         this.topBar = new TopBar(this.settingsPanel, this.bookmarkManager);
-    this.bottomBar = new BottomBar();
+    this.bottomBar = new BottomBar(this.settings);
   }
 
   async init(): Promise<void> {
@@ -244,6 +246,9 @@ class App {
         console.warn('Failed to update webview blur styles:', error);
       });
     }
+
+    // Update BottomBar settings (search engine, home page, etc.)
+    this.bottomBar.updateSettings(this.settings);
 
     this.saveSettings();
   }

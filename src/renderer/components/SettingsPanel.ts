@@ -41,7 +41,9 @@ export class SettingsPanel {
         blurVideos: true,
         blurRadiusPx: 25,
       },
-      theme: 'light',
+      theme: 'dark',
+      searchEngine: 'google',
+      homePage: '/home.html',
       accessibility: {
         highContrast: false,
         largeText: false,
@@ -137,12 +139,30 @@ export class SettingsPanel {
       this.updateMediaBlurSettings({ blurRadiusPx: value });
     });
 
+    // Browsing settings
+    const searchEngineSelect = document.getElementById('search-engine-select') as HTMLSelectElement;
+    const homePageInput = document.getElementById('home-page-input') as HTMLInputElement;
+
+    searchEngineSelect?.addEventListener('change', () => {
+      this.updateSettings({ searchEngine: searchEngineSelect.value });
+    });
+
+    homePageInput?.addEventListener('change', () => {
+      const homePage = homePageInput.value.trim() || '/home.html';
+      this.updateSettings({ homePage });
+    });
+
+    homePageInput?.addEventListener('blur', () => {
+      const homePage = homePageInput.value.trim() || '/home.html';
+      this.updateSettings({ homePage });
+    });
+
     // Theme settings
     const themeSelect = document.getElementById('theme-select') as HTMLSelectElement;
     const hoverRevealToggle = document.getElementById('hover-reveal-toggle') as HTMLInputElement;
 
     themeSelect?.addEventListener('change', () => {
-      this.updateSettings({ theme: themeSelect.value as 'light' | 'dark' | 'high-contrast' });
+      this.updateSettings({ theme: themeSelect.value as 'light' | 'dark' | 'deep-purple' | 'high-contrast' });
     });
 
     hoverRevealToggle?.addEventListener('change', () => {
@@ -211,6 +231,8 @@ export class SettingsPanel {
     const blurVideosToggle = document.getElementById('blur-videos-toggle') as HTMLInputElement;
     const blurRadiusSlider = document.getElementById('blur-radius-slider') as HTMLInputElement;
     const blurRadiusValue = document.getElementById('blur-radius-value');
+    const searchEngineSelect = document.getElementById('search-engine-select') as HTMLSelectElement;
+    const homePageInput = document.getElementById('home-page-input') as HTMLInputElement;
     const themeSelect = document.getElementById('theme-select') as HTMLSelectElement;
     const hoverRevealToggle = document.getElementById('hover-reveal-toggle') as HTMLInputElement;
     const largeTextToggle = document.getElementById('large-text-toggle') as HTMLInputElement;
@@ -226,6 +248,8 @@ export class SettingsPanel {
       blurRadiusValue.textContent = `${this.currentSettings.mediaBlur.blurRadiusPx}px`;
       console.log('SettingsPanel: Set display to:', blurRadiusValue.textContent);
     }
+    if (searchEngineSelect) searchEngineSelect.value = this.currentSettings.searchEngine;
+    if (homePageInput) homePageInput.value = this.currentSettings.homePage;
     if (themeSelect) themeSelect.value = this.currentSettings.theme;
     if (hoverRevealToggle) hoverRevealToggle.checked = this.currentSettings.ui.showHoverReveal;
     if (largeTextToggle) largeTextToggle.checked = this.currentSettings.accessibility.largeText;

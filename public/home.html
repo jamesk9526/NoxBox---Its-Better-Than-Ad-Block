@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoxBox Home</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .home-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg,
+                var(--gradient-start, #1a1a2e) 0%,
+                var(--gradient-middle, #16213e) 50%,
+                var(--gradient-end, #0f0f23) 100%);
+            color: var(--text-color, #ffffff);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
+        }
+
+        .home-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            min-height: 100vh;
+        }
+
+        .home-header {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .app-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(45deg, #9333ea, #c084fc, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(147, 51, 234, 0.3);
+        }
+
+        .nox { color: #9333ea; }
+        .box { color: #c084fc; }
+
+        .app-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary, #b0b0b0);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .search-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-graphic {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--card-bg, rgba(255, 255, 255, 0.1));
+            border: 2px solid var(--accent-color, #9333ea);
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .search-instruction {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .instruction-icon {
+            font-size: 3rem;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        .search-instruction h3 {
+            color: var(--text-color, #ffffff);
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .search-instruction p {
+            color: var(--text-secondary, #b0b0b0);
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .arrow-down {
+            font-size: 2rem;
+            margin-top: 1rem;
+            animation: bounce 1s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .resource-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .resource-section h3 {
+            color: var(--text-color, #ffffff);
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .resource-card {
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            background: var(--card-bg, rgba(255, 255, 255, 0.1));
+            border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-color, #ffffff);
+            transition: all 0.3s ease;
+            text-align: center;
+            cursor: pointer;
+            min-height: 160px;
+        }
+
+        .resource-card:hover {
+            background: var(--card-hover, rgba(255, 255, 255, 0.2));
+            transform: translateY(-5px);
+            border-color: var(--accent-color, #9333ea);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .resource-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .resource-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-color, #ffffff);
+            margin-bottom: 0.5rem;
+        }
+
+        .resource-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary, #b0b0b0);
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .features-section {
+            margin-bottom: 3rem;
+        }
+
+        .features-section h3 {
+            color: var(--text-color, #ffffff);
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+            background: var(--card-bg, rgba(255, 255, 255, 0.1));
+            border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-color, #ffffff);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary, #b0b0b0);
+            line-height: 1.4;
+        }
+
+        .quick-actions-section {
+            margin-bottom: 3rem;
+        }
+
+        .quick-actions-section h3 {
+            color: var(--text-color, #ffffff);
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--accent-color, #9333ea);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--accent-hover, #7c3aed);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: auto;
+            padding-top: 2rem;
+            color: var(--text-secondary, #b0b0b0);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .home-container {
+                padding: 1rem;
+                gap: 2rem;
+            }
+
+            .app-title {
+                font-size: 2.5rem;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+
+            .resource-grid {
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="home-page">
+        <div class="home-container">
+            <div class="home-header">
+                <div class="logo-section">
+                    <h1 class="app-title">
+                        <span class="nox">Nox</span><span class="box">Box</span>
+                    </h1>
+                    <p class="app-subtitle">Private Browser with Advanced Features</p>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <div class="search-graphic">
+                    <div class="search-instruction">
+                        <div class="instruction-icon">🔍</div>
+                        <h3>Use the Search Bar Below</h3>
+                        <p>Enter your search terms or website URLs in the address bar at the bottom of the window</p>
+                        <div class="arrow-down">⬇️</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="resource-section">
+                <h3>Educational Resources</h3>
+                <div class="resource-grid">
+                    <a href="https://www.abcmouse.com" class="resource-card" data-url="https://www.abcmouse.com">
+                        <span class="resource-icon">�️</span>
+                        <span class="resource-name">ABCmouse</span>
+                        <span class="resource-desc">Interactive learning games and activities for kids</span>
+                    </a>
+                    <a href="https://www.starfall.com" class="resource-card" data-url="https://www.starfall.com">
+                        <span class="resource-icon">⭐</span>
+                        <span class="resource-name">Starfall</span>
+                        <span class="resource-desc">Free educational games for early learners</span>
+                    </a>
+                    <a href="https://www.khanacademy.org" class="resource-card" data-url="https://www.khanacademy.org">
+                        <span class="resource-icon">🎓</span>
+                        <span class="resource-name">Khan Academy</span>
+                        <span class="resource-desc">Free online courses and educational videos</span>
+                    </a>
+                    <a href="https://www.ducksters.com" class="resource-card" data-url="https://www.ducksters.com">
+                        <span class="resource-icon">🦆</span>
+                        <span class="resource-name">Ducksters</span>
+                        <span class="resource-desc">Educational content for kids on history, science, and more</span>
+                    </a>
+                    <a href="https://www.funbrain.com" class="resource-card" data-url="https://www.funbrain.com">
+                        <span class="resource-icon">🧠</span>
+                        <span class="resource-name">Funbrain</span>
+                        <span class="resource-desc">Educational games and activities for all ages</span>
+                    </a>
+                    <a href="https://www.timeforkids.com" class="resource-card" data-url="https://www.timeforkids.com">
+                        <span class="resource-icon">📰</span>
+                        <span class="resource-name">Time for Kids</span>
+                        <span class="resource-desc">News and current events for children</span>
+                    </a>
+                    <a href="https://www.scholastic.com" class="resource-card" data-url="https://www.scholastic.com">
+                        <span class="resource-icon">📚</span>
+                        <span class="resource-name">Scholastic</span>
+                        <span class="resource-desc">Books, learning materials, and educational resources</span>
+                    </a>
+                    <a href="https://www.nationalgeographic.com" class="resource-card" data-url="https://www.nationalgeographic.com">
+                        <span class="resource-icon">🌍</span>
+                        <span class="resource-name">National Geographic</span>
+                        <span class="resource-desc">Science, nature, and exploration content for kids</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <h3>Why Choose NoxBox?</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-title">Privacy First</div>
+                        <div class="feature-desc">Advanced privacy features to protect your browsing experience</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👁️</div>
+                        <div class="feature-title">Smart Content Filtering</div>
+                        <div class="feature-desc">Blur sensitive content with selective reveal options</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Fast & Lightweight</div>
+                        <div class="feature-desc">Optimized performance with minimal resource usage</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-title">Customizable</div>
+                        <div class="feature-desc">Personalize your browsing experience with themes and settings</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions-section">
+                <h3>Quick Actions</h3>
+                <div class="quick-actions-grid">
+                    <button class="quick-action-btn" onclick="searchGoogle()">
+                        <span>🔍</span>
+                        Search Google
+                    </button>
+                    <button class="quick-action-btn" onclick="openYouTube()">
+                        <span>📺</span>
+                        YouTube
+                    </button>
+                    <button class="quick-action-btn" onclick="openWikipedia()">
+                        <span>📖</span>
+                        Wikipedia
+                    </button>
+                    <button class="quick-action-btn" onclick="openGitHub()">
+                        <span>💻</span>
+                        GitHub
+                    </button>
+                    <button class="quick-action-btn" onclick="openSettings()">
+                        <span>⚙️</span>
+                        Settings
+                    </button>
+                    <button class="quick-action-btn" onclick="openBookmarks()">
+                        <span>⭐</span>
+                        Bookmarks
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>&copy; 2024 NoxBox - Built with Electron</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle resource links and quick actions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle resource links
+            document.querySelectorAll('.resource-card').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.dataset.url;
+                    if (url) {
+                        window.parent.postMessage({
+                            type: 'home-navigate',
+                            data: { url }
+                        }, '*');
+                    }
+                });
+            });
+        });
+
+        // Quick action functions
+        function searchGoogle() {
+            window.parent.postMessage({
+                type: 'home-search',
+                data: { query: '', searchEngine: 'google' }
+            }, '*');
+        }
+
+        function openYouTube() {
+            window.parent.postMessage({
+                type: 'home-navigate',
+                data: { url: 'https://www.youtube.com' }
+            }, '*');
+        }
+
+        function openWikipedia() {
+            window.parent.postMessage({
+                type: 'home-navigate',
+                data: { url: 'https://www.wikipedia.org' }
+            }, '*');
+        }
+
+        function openGitHub() {
+            window.parent.postMessage({
+                type: 'home-navigate',
+                data: { url: 'https://www.github.com' }
+            }, '*');
+        }
+
+        function openSettings() {
+            // This would need to be implemented in the main app
+            console.log('Settings button clicked - implement in main app');
+        }
+
+        function openBookmarks() {
+            // This would need to be implemented in the main app
+            console.log('Bookmarks button clicked - implement in main app');
+        }
+    </script>
+</body>
+</html>

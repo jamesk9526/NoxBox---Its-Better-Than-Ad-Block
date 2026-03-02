@@ -150,12 +150,19 @@ export class MediaBlurController {
    * Update CSS variables for blur radius
    */
   private updateCSSVariables(): void {
-    const root = document.documentElement;
-    console.log('MediaBlurController: Setting --blur-radius to:', `${this.options.blurRadiusPx}px`);
-    root.style.setProperty('--blur-radius', `${this.options.blurRadiusPx}px`);
-    
-    // Verify it was set
-    const setRadius = getComputedStyle(root).getPropertyValue('--blur-radius');
-    console.log('MediaBlurController: Verified --blur-radius is now:', setRadius);
+    const root = document?.documentElement as HTMLElement | null;
+    if (!root || !root.style || typeof root.style.setProperty !== 'function') {
+      return;
+    }
+
+    const blurValue = `${this.options.blurRadiusPx}px`;
+    console.log('MediaBlurController: Setting --blur-radius to:', blurValue);
+    root.style.setProperty('--blur-radius', blurValue);
+
+    // Verify only when a real Element is available (jsdom tests use mocks)
+    if (typeof getComputedStyle === 'function' && root instanceof Element) {
+      const setRadius = getComputedStyle(root).getPropertyValue('--blur-radius');
+      console.log('MediaBlurController: Verified --blur-radius is now:', setRadius);
+    }
   }
 }

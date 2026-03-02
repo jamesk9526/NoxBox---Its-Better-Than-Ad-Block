@@ -32,15 +32,6 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path = __importStar(require("path"));
@@ -119,20 +110,20 @@ electron_1.ipcMain.handle('window:close', () => {
     }
 });
 electron_1.ipcMain.handle('window:isMaximized', () => {
-    return (mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.isMaximized()) || false;
+    return mainWindow?.isMaximized() || false;
 });
 // Handle opening URLs in system browser
-electron_1.ipcMain.handle('open-in-browser', (event, url) => __awaiter(void 0, void 0, void 0, function* () {
+electron_1.ipcMain.handle('open-in-browser', async (event, url) => {
     try {
         console.log('Opening URL in system browser:', url);
-        yield electron_1.shell.openExternal(url);
+        await electron_1.shell.openExternal(url);
         return { success: true };
     }
     catch (error) {
         console.error('Failed to open URL in system browser:', error);
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
-}));
+});
 // Handle app restart
 electron_1.ipcMain.handle('app:restart', () => {
     console.log('Restarting application...');
@@ -154,7 +145,7 @@ electron_1.app.on('web-contents-created', (event, contents) => {
     if (contents.getType() === 'webview') {
         // Intercept and modify headers to bypass X-Frame-Options restrictions
         contents.session.webRequest.onHeadersReceived((details, callback) => {
-            const responseHeaders = Object.assign({}, details.responseHeaders);
+            const responseHeaders = { ...details.responseHeaders };
             // Remove X-Frame-Options header to allow iframe embedding
             if (responseHeaders['X-Frame-Options']) {
                 delete responseHeaders['X-Frame-Options'];

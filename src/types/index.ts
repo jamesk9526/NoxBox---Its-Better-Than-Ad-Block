@@ -4,9 +4,19 @@ export interface MediaBlurOptions {
   blurRadiusPx: number;
 }
 
+export interface SearchEngine {
+  id: string;
+  name: string;
+  searchUrl: string;
+  homePage: string;
+  icon?: string;
+}
+
 export interface AppSettings {
   mediaBlur: MediaBlurOptions;
-  theme: 'light' | 'dark' | 'high-contrast';
+  theme: 'light' | 'dark' | 'deep-purple' | 'high-contrast';
+  searchEngine: string; // ID of the selected search engine
+  homePage: string; // URL to load when going home or starting app
   accessibility: {
     highContrast: boolean;
     largeText: boolean;

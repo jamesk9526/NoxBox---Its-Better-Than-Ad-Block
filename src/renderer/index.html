@@ -8,80 +8,103 @@
 </head>
 <body>
     <div id="app">
-        <!-- Top Bar -->
-        <header id="top-bar" class="top-bar">
-            <div class="window-controls">
-                <button id="minimize-btn" class="window-control" aria-label="Minimize">
-                    <span class="control-icon">—</span>
-                </button>
-                <button id="maximize-btn" class="window-control" aria-label="Maximize">
-                    <span class="control-icon">□</span>
-                </button>
-                <button id="close-btn" class="window-control close" aria-label="Close">
-                    <span class="control-icon">×</span>
-                </button>
-            </div>
-            <div class="title-bar">
-                <span class="app-title">NoxBox</span>
-            </div>
-            <div class="top-controls">
-                <button id="bookmarks-btn" class="top-control" aria-label="Bookmarks">
-                    <span class="control-icon">☆</span>
-                </button>
-                <button id="history-btn" class="top-control" aria-label="History">
-                    <span class="control-icon">🕒</span>
-                </button>
-                <button id="settings-btn" class="top-control" aria-label="Settings">
-                    <span class="control-icon">⚙</span>
-                </button>
-            </div>
-        </header>
+        <div class="chrome-shell">
+            <!-- Top Bar -->
+            <header id="top-bar" class="top-bar">
+                <div class="window-controls">
+                    <button id="minimize-btn" class="window-control" aria-label="Minimize">
+                        <span class="control-icon">—</span>
+                    </button>
+                    <button id="maximize-btn" class="window-control" aria-label="Maximize">
+                        <span class="control-icon">□</span>
+                    </button>
+                    <button id="close-btn" class="window-control close" aria-label="Close">
+                        <span class="control-icon">×</span>
+                    </button>
+                </div>
+                <div class="title-bar">
+                    <span class="app-title">NoxBox</span>
+                    <span class="app-subtitle">Privacy-first blur-on browser</span>
+                </div>
+                <div class="top-controls">
+                    <button id="bookmarks-btn" class="top-control" aria-label="Bookmarks">
+                        <span class="control-icon">☆</span>
+                    </button>
+                    <button id="history-btn" class="top-control" aria-label="History">
+                        <span class="control-icon">🕒</span>
+                    </button>
+                    <button id="settings-btn" class="top-control" aria-label="Settings">
+                        <span class="control-icon">⚙</span>
+                    </button>
+                </div>
+            </header>
 
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <div class="browser-content">
-                <webview id="browser-webview" src="https://www.google.com" class="browser-webview" title="Browser Content" preload="./webview-preload.js"></webview>
-            </div>
-        </main>
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <div class="browser-content">
+                    <webview id="browser-webview" src="https://www.google.com" class="browser-webview" title="Browser Content" preload="./webview-preload.js"></webview>
+                </div>
+            </main>
 
-        <!-- Bottom Bar -->
-        <footer id="bottom-bar" class="bottom-bar">
-            <div class="nav-controls">
-                <button id="back-btn" class="nav-btn" disabled aria-label="Go back">
-                    <span class="nav-icon">←</span>
-                </button>
-                <button id="forward-btn" class="nav-btn" disabled aria-label="Go forward">
-                    <span class="nav-icon">→</span>
-                </button>
-                <button id="refresh-btn" class="nav-btn" aria-label="Refresh">
-                    <span class="nav-icon">↻</span>
-                </button>
-                <button id="home-btn" class="nav-btn" aria-label="Go home">
-                    <span class="nav-icon">🏠</span>
-                </button>
-                <button id="bookmark-btn" class="nav-btn" aria-label="Bookmark current page">
-                    <span class="nav-icon">☆</span>
-                </button>
-                <button id="mute-btn" class="nav-btn" aria-label="Toggle mute">
-                    <span class="nav-icon">🔇</span>
-                </button>
-                <button id="unblur-mode-btn" class="nav-btn" aria-label="Toggle unblur mode">
-                    <span class="nav-icon">👁️</span>
-                </button>
-            </div>
-            <div class="address-bar">
-                <input
-                    type="text"
-                    id="address-input"
-                    placeholder="Enter URL or search..."
-                    value="https://www.google.com"
-                    aria-label="Address bar"
-                />
-            </div>
-            <div class="status-info">
-                <span id="status-text">Ready</span>
-            </div>
-        </footer>
+            <!-- Bottom Bar -->
+            <footer id="bottom-bar" class="bottom-bar">
+                <div class="bottom-inner">
+                    <div class="nav-controls" aria-label="Navigation controls">
+                        <button id="back-btn" class="nav-btn" disabled aria-label="Go back">
+                            <span class="nav-icon">←</span>
+                        </button>
+                        <button id="forward-btn" class="nav-btn" disabled aria-label="Go forward">
+                            <span class="nav-icon">→</span>
+                        </button>
+                        <button id="refresh-btn" class="nav-btn" aria-label="Refresh">
+                            <span class="nav-icon">↻</span>
+                        </button>
+                        <button id="home-btn" class="nav-btn" aria-label="Go home">
+                            <span class="nav-icon">🏠</span>
+                        </button>
+                    </div>
+
+                    <div class="address-bar" role="search">
+                        <div class="search-engine-selector">
+                            <select id="bottom-search-engine-select" aria-label="Select search engine">
+                                <option value="google">🔍 Google</option>
+                                <option value="duckduckgo">🦆 DuckDuckGo</option>
+                                <option value="bing">🌐 Bing</option>
+                                <option value="startpage">🔒 Startpage</option>
+                                <option value="searx">⚡ SearXNG</option>
+                                <option value="yandex">🇷🇺 Yandex</option>
+                                <option value="baidu">🇨🇳 Baidu</option>
+                                <option value="custom">🏠 NoxBox Home</option>
+                            </select>
+                        </div>
+                        <div class="address-input-wrap">
+                            <input
+                                type="text"
+                                id="address-input"
+                                placeholder="Enter URL or search..."
+                                value="https://www.google.com"
+                                aria-label="Address bar"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="action-controls" aria-label="Page actions">
+                        <button id="bookmark-btn" class="nav-btn" aria-label="Bookmark current page">
+                            <span class="nav-icon">☆</span>
+                        </button>
+                        <button id="mute-btn" class="nav-btn" aria-label="Toggle mute">
+                            <span class="nav-icon">🔇</span>
+                        </button>
+                        <button id="unblur-mode-btn" class="nav-btn" aria-label="Toggle unblur mode">
+                            <span class="nav-icon">👁️</span>
+                        </button>
+                        <div class="status-info" aria-live="polite">
+                            <span id="status-text">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
     </div>
 
     <!-- History Panel -->
@@ -174,13 +197,31 @@
                 </section>
 
                 <section class="settings-section">
+                    <h3>🧭 Browsing</h3>
+                    <div class="setting-item">
+                        <label for="search-engine-select">Search Engine</label>
+                        <select id="search-engine-select">
+                            <option value="google">🔍 Google</option>
+                            <option value="duckduckgo">🦆 DuckDuckGo</option>
+                            <option value="bing">🌐 Bing</option>
+                            <option value="startpage">🔒 Startpage</option>
+                            <option value="searx">⚡ SearXNG</option>
+                            <option value="yandex">🇷🇺 Yandex</option>
+                            <option value="baidu">🇨🇳 Baidu</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="home-page-input">Home Page</label>
+                        <input type="text" id="home-page-input" placeholder="https://example.com or /home.html" />
+                    </div>
+                </section>
+
+                <section class="settings-section">
                     <h3>🎨 Appearance</h3>
                     <div class="setting-item">
                         <label for="theme-select">Theme</label>
                         <select id="theme-select">
                             <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                            <option value="high-contrast">High Contrast</option>
                         </select>
                     </div>
                     <div class="setting-item">

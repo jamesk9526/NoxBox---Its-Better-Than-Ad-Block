@@ -1,17 +1,18 @@
 export class OnboardingFlow {
   private element!: HTMLElement;
   private currentStep = 0;
-  private totalSteps = 1;
+  private totalSteps = 4;
 
   constructor() {
     this.createOnboardingElements();
+    this.setupEventListeners();
   }
 
   private createOnboardingElements(): void {
     // Create main onboarding container
     const onboarding = document.createElement('div');
     onboarding.id = 'onboarding-flow';
-    onboarding.className = 'onboarding-flow dark-theme';
+    onboarding.className = 'onboarding-flow';
 
     onboarding.innerHTML = `
       <div class="onboarding-backdrop">
@@ -28,7 +29,7 @@ export class OnboardingFlow {
 
         <div class="onboarding-content">
 
-        <!-- Single Step: Welcome and Get Started -->
+        <!-- Step 1: Welcome -->
         <div class="onboarding-step active" data-step="0">
           <div class="step-content">
             <div class="welcome-section">
@@ -64,16 +65,114 @@ export class OnboardingFlow {
           </div>
         </div>
 
+        <!-- Step 2: How It Works -->
+        <div class="onboarding-step" data-step="1">
+          <div class="step-content">
+            <h2>How NoxBox Works</h2>
+            <div class="demo-section">
+              <div class="browser-mockup">
+                <div class="browser-header">
+                  <div class="browser-controls">
+                    <span class="control-dot red"></span>
+                    <span class="control-dot yellow"></span>
+                    <span class="control-dot green"></span>
+                  </div>
+                  <div class="browser-address">example.com</div>
+                </div>
+                <div class="browser-content">
+                  <div class="content-text">Regular webpage content...</div>
+                  <div class="content-media blurred">
+                    <div class="blur-indicator">
+                      <span class="blur-icon">🔒</span>
+                      <span class="blur-text">Auto-blurred</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="demo-explanation">
+                <p>All images and videos are automatically blurred when you visit a website.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Simplified Navigation -->
+        <!-- Step 3: Unblur Mode -->
+        <div class="onboarding-step" data-step="2">
+          <div class="step-content">
+            <h2>Take Control</h2>
+            <div class="control-section">
+              <div class="control-step">
+                <div class="step-number">1</div>
+                <div class="step-info">
+                  <h3>Enter Unblur Mode</h3>
+                  <p>Click the eye icon in the toolbar to activate selective control</p>
+                </div>
+              </div>
+              <div class="control-arrow">↓</div>
+              <div class="control-step">
+                <div class="step-number">2</div>
+                <div class="step-info">
+                  <h3>Click to Reveal</h3>
+                  <p>Click on any blurred content to unblur it instantly</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Get Started -->
+        <div class="onboarding-step" data-step="3">
+          <div class="step-content">
+            <h2>You're All Set!</h2>
+            <div class="final-section">
+              <div class="success-message">
+                <div class="success-icon">🎉</div>
+                <p>Ready to browse with focus and control</p>
+              </div>
+
+              <div class="tips-section">
+                <h3>Quick Tips</h3>
+                <div class="tips-list">
+                  <div class="tip-item">
+                    <span class="tip-bullet">•</span>
+                    <span>Use the settings panel to adjust blur intensity</span>
+                  </div>
+                  <div class="tip-item">
+                    <span class="tip-bullet">•</span>
+                    <span>Hover over blurred content for quick previews</span>
+                  </div>
+                  <div class="tip-item">
+                    <span class="tip-bullet">•</span>
+                    <span>Right-click for additional options</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+
+        <!-- Navigation -->
         <div class="onboarding-navigation">
           <div class="nav-left">
             <button id="onboarding-skip" class="nav-btn secondary">Skip</button>
           </div>
 
+          <div class="progress-section">
+            <div class="progress-dots">
+              <div class="progress-dot active" data-step="0"></div>
+              <div class="progress-dot" data-step="1"></div>
+              <div class="progress-dot" data-step="2"></div>
+              <div class="progress-dot" data-step="3"></div>
+            </div>
+            <span class="progress-text">Step <span id="current-step">1</span> of ${this.totalSteps}</span>
+          </div>
+
           <div class="nav-right">
-            <button id="onboarding-finish" class="nav-btn primary success">Get Started</button>
+            <button id="onboarding-back" class="nav-btn secondary" style="display: none;">Back</button>
+            <button id="onboarding-next" class="nav-btn primary">Next</button>
+            <button id="onboarding-finish" class="nav-btn primary success" style="display: none;">Get Started</button>
           </div>
         </div>
       </div>
@@ -87,194 +186,10 @@ export class OnboardingFlow {
     document.head.appendChild(styles);
     document.body.appendChild(onboarding);
     this.element = onboarding;
+  }
 
-    // Setup event listeners after elements are in DOM
-    this.setupEventListeners();
-  }  private getOnboardingStyles(): string {
+  private getOnboardingStyles(): string {
     return `
-      .onboarding-flow.dark-theme {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
-      }
-
-      .onboarding-flow.dark-theme .onboarding-backdrop {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
-      }
-
-      .onboarding-flow.dark-theme .backdrop-pattern {
-        background-image:
-          radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-          radial-gradient(circle at 75% 75%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
-      }
-
-      .onboarding-flow.dark-theme .onboarding-container {
-        background: rgba(15, 15, 35, 0.95);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(102, 126, 234, 0.2);
-        box-shadow:
-          0 25px 50px rgba(0, 0, 0, 0.3),
-          0 10px 25px rgba(0, 0, 0, 0.2),
-          inset 0 1px 0 rgba(102, 126, 234, 0.1);
-      }
-
-      .onboarding-flow.dark-theme .onboarding-header {
-        background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.9) 100%);
-        border-bottom: 1px solid rgba(102, 126, 234, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .brand-title {
-        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      .onboarding-flow.dark-theme .brand-tagline {
-        color: #a0aec0;
-      }
-
-      .onboarding-flow.dark-theme .brand-icon {
-        filter: drop-shadow(0 2px 8px rgba(102, 126, 234, 0.3));
-      }
-
-      .onboarding-flow.dark-theme .step-content h2 {
-        color: #ffffff;
-      }
-
-      .onboarding-flow.dark-theme .welcome-description {
-        color: #cbd5e0;
-      }
-
-      .onboarding-flow.dark-theme .feature-item {
-        background: rgba(26, 26, 46, 0.8);
-        border: 1px solid rgba(102, 126, 234, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .feature-item:hover {
-        background: rgba(30, 30, 55, 0.9);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .feature-text h3 {
-        color: #ffffff;
-      }
-
-      .onboarding-flow.dark-theme .feature-text p {
-        color: #a0aec0;
-      }
-
-      .onboarding-flow.dark-theme .browser-mockup {
-        background: rgba(15, 15, 35, 0.9);
-        border: 1px solid rgba(102, 126, 234, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .browser-header {
-        background: rgba(22, 33, 62, 0.8);
-        border-bottom: 1px solid rgba(102, 126, 234, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .browser-address {
-        background: rgba(26, 26, 46, 0.8);
-        border: 1px solid rgba(102, 126, 234, 0.3);
-        color: #e2e8f0;
-      }
-
-      .onboarding-flow.dark-theme .content-text {
-        color: #a0aec0;
-      }
-
-      .onboarding-flow.dark-theme .content-media {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-      }
-
-      .onboarding-flow.dark-theme .blur-indicator {
-        color: #cbd5e0;
-      }
-
-      .onboarding-flow.dark-theme .demo-explanation p {
-        color: #cbd5e0;
-      }
-
-      .onboarding-flow.dark-theme .control-step {
-        background: rgba(26, 26, 46, 0.8);
-        border: 1px solid rgba(102, 126, 234, 0.2);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .step-info h3 {
-        color: #ffffff;
-      }
-
-      .onboarding-flow.dark-theme .step-info p {
-        color: #a0aec0;
-      }
-
-      .onboarding-flow.dark-theme .control-arrow {
-        color: #667eea;
-      }
-
-      .onboarding-flow.dark-theme .success-message p {
-        color: #cbd5e0;
-      }
-
-      .onboarding-flow.dark-theme .tips-section h3 {
-        color: #ffffff;
-      }
-
-      .onboarding-flow.dark-theme .tip-item {
-        background: rgba(26, 26, 46, 0.8);
-        border: 1px solid rgba(102, 126, 234, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .tip-item span:last-child {
-        color: #a0aec0;
-      }
-
-      .onboarding-flow.dark-theme .onboarding-navigation {
-        background: rgba(15, 15, 35, 0.9);
-        border-top: 1px solid rgba(102, 126, 234, 0.2);
-      }
-
-      .onboarding-flow.dark-theme .progress-text {
-        color: #a0aec0;
-      }
-
-      .onboarding-flow.dark-theme .nav-btn.secondary {
-        color: #a0aec0;
-        border: 1px solid rgba(102, 126, 234, 0.3);
-      }
-
-      .onboarding-flow.dark-theme .nav-btn.secondary:hover {
-        background: rgba(26, 26, 46, 0.8);
-        border-color: rgba(102, 126, 234, 0.5);
-      }
-
-      .onboarding-flow.dark-theme .nav-btn.primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-      }
-
-      .onboarding-flow.dark-theme .nav-btn.primary:hover {
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
-      }
-
-      .onboarding-flow.dark-theme .nav-btn.success {
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
-      }
-
-      .onboarding-flow.dark-theme .nav-btn.success:hover {
-        box-shadow: 0 6px 16px rgba(72, 187, 120, 0.5);
-      }
-
-      .onboarding-flow.dark-theme .progress-dot {
-        background: rgba(102, 126, 234, 0.3);
-      }
-
-      .onboarding-flow.dark-theme .progress-dot.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      }
-
-      /* Light theme (default) */
       .onboarding-flow {
         position: fixed;
         top: 0;
@@ -315,12 +230,11 @@ export class OnboardingFlow {
       .onboarding-container {
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(20px);
-        border-radius: 24px;
+        border-radius: 20px;
         box-shadow:
           0 25px 50px rgba(0, 0, 0, 0.15),
-          0 10px 25px rgba(0, 0, 0, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        max-width: 900px;
+          0 10px 25px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
         width: 90%;
         max-height: 90vh;
         display: flex;
@@ -328,93 +242,72 @@ export class OnboardingFlow {
         position: relative;
         animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        overflow: hidden;
       }
 
       .onboarding-header {
-        padding: 32px 48px;
+        padding: 24px 32px;
         text-align: center;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
-        position: relative;
-        flex-shrink: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.8) 100%);
       }
 
       .brand-section {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
       }
 
       .brand-icon {
-        font-size: 3.5rem;
+        font-size: 3rem;
         animation: gentlePulse 2s ease-in-out infinite;
-        filter: drop-shadow(0 2px 8px rgba(102, 126, 234, 0.2));
       }
 
       .brand-title {
-        font-size: 2.25rem;
+        font-size: 2rem;
         font-weight: 700;
         color: #1a202c;
         margin: 0;
-        letter-spacing: -0.025em;
-        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        letter-spacing: -0.02em;
       }
 
       .brand-tagline {
-        font-size: 1.125rem;
+        font-size: 1rem;
         color: #718096;
         margin: 0;
         font-weight: 500;
-        letter-spacing: 0.01em;
       }
 
       .onboarding-content {
         flex: 1;
         overflow-y: auto;
         padding: 0;
-        display: flex;
-        flex-direction: column;
       }
 
       .onboarding-step {
         display: none;
-        padding: 40px 48px;
-        min-height: 450px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        padding: 32px;
+        min-height: 400px;
       }
 
       .onboarding-step.active {
-        display: flex;
+        display: block;
         animation: fadeInUp 0.5s ease-out;
       }
 
-      .step-content {
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-      }
-
       .step-content h2 {
-        font-size: 1.875rem;
+        font-size: 1.75rem;
         font-weight: 600;
         color: #1a202c;
-        margin: 0 0 20px 0;
+        margin: 0 0 16px 0;
         text-align: center;
-        line-height: 1.3;
       }
 
       .welcome-description {
         font-size: 1.125rem;
         color: #4a5568;
         text-align: center;
-        margin: 0 0 40px 0;
+        margin: 0 0 32px 0;
         line-height: 1.6;
         max-width: 600px;
         margin-left: auto;
@@ -423,16 +316,16 @@ export class OnboardingFlow {
 
       .key-features {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 28px;
-        margin-top: 40px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 24px;
+        margin-top: 32px;
       }
 
       .feature-item {
         display: flex;
         align-items: flex-start;
-        gap: 18px;
-        padding: 24px;
+        gap: 16px;
+        padding: 20px;
         background: #f8fafc;
         border-radius: 12px;
         border: 1px solid #e2e8f0;
@@ -445,16 +338,15 @@ export class OnboardingFlow {
       }
 
       .feature-icon {
-        font-size: 2.2rem;
+        font-size: 2rem;
         flex-shrink: 0;
-        margin-top: 2px;
       }
 
       .feature-text h3 {
         font-size: 1.125rem;
         font-weight: 600;
         color: #1a202c;
-        margin: 0 0 6px 0;
+        margin: 0 0 4px 0;
       }
 
       .feature-text p {
@@ -466,22 +358,22 @@ export class OnboardingFlow {
 
       .demo-section {
         text-align: center;
-        margin-top: 32px;
+        margin-top: 24px;
       }
 
       .browser-mockup {
         background: #ffffff;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        margin: 0 auto 32px;
-        max-width: 520px;
+        margin: 0 auto 24px;
+        max-width: 500px;
         overflow: hidden;
         border: 1px solid #e2e8f0;
       }
 
       .browser-header {
         background: #f8fafc;
-        padding: 14px 18px;
+        padding: 12px 16px;
         border-bottom: 1px solid #e2e8f0;
         display: flex;
         align-items: center;
@@ -515,7 +407,7 @@ export class OnboardingFlow {
       }
 
       .browser-content {
-        padding: 28px;
+        padding: 24px;
       }
 
       .content-text {
@@ -553,7 +445,7 @@ export class OnboardingFlow {
       }
 
       .demo-explanation {
-        margin-top: 20px;
+        margin-top: 16px;
       }
 
       .demo-explanation p {
@@ -567,26 +459,25 @@ export class OnboardingFlow {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 40px;
-        margin-top: 32px;
+        gap: 32px;
+        margin-top: 24px;
       }
 
       .control-step {
         display: flex;
         align-items: flex-start;
-        gap: 20px;
-        padding: 28px;
+        gap: 16px;
+        padding: 24px;
         background: #f8fafc;
         border-radius: 12px;
         border: 1px solid #e2e8f0;
-        max-width: 450px;
+        max-width: 400px;
         width: 100%;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       }
 
       .step-number {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 50%;
@@ -594,16 +485,15 @@ export class OnboardingFlow {
         align-items: center;
         justify-content: center;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
       }
 
       .step-info h3 {
         font-size: 1.125rem;
         font-weight: 600;
         color: #1a202c;
-        margin: 0 0 6px 0;
+        margin: 0 0 4px 0;
       }
 
       .step-info p {
@@ -617,21 +507,20 @@ export class OnboardingFlow {
         font-size: 1.5rem;
         color: #667eea;
         font-weight: bold;
-        margin: 8px 0;
       }
 
       .final-section {
         text-align: center;
-        margin-top: 32px;
+        margin-top: 24px;
       }
 
       .success-message {
-        margin-bottom: 40px;
+        margin-bottom: 32px;
       }
 
       .success-icon {
-        font-size: 3.2rem;
-        margin-bottom: 18px;
+        font-size: 3rem;
+        margin-bottom: 16px;
         animation: bounce 1s ease-out;
       }
 
@@ -644,7 +533,7 @@ export class OnboardingFlow {
 
       .tips-section {
         text-align: left;
-        max-width: 450px;
+        max-width: 400px;
         margin: 0 auto;
       }
 
@@ -652,31 +541,25 @@ export class OnboardingFlow {
         font-size: 1.25rem;
         font-weight: 600;
         color: #1a202c;
-        margin: 0 0 20px 0;
-        text-align: center;
+        margin: 0 0 16px 0;
       }
 
       .tips-list {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
       }
 
       .tip-item {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
-        padding: 12px 16px;
-        background: #f8fafc;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
+        gap: 8px;
       }
 
       .tip-bullet {
         color: #667eea;
         font-weight: bold;
         flex-shrink: 0;
-        margin-top: 2px;
       }
 
       .tip-item span:last-child {
@@ -686,46 +569,34 @@ export class OnboardingFlow {
       }
 
       .onboarding-navigation {
-        padding: 32px 48px;
+        padding: 24px 32px;
         border-top: 1px solid #e2e8f0;
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.8);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 32px;
-        margin-top: auto;
-        flex-shrink: 0;
+        gap: 24px;
       }
 
-      .nav-left {
+      .nav-left, .nav-right {
         flex-shrink: 0;
-        min-width: 80px;
-      }
-
-      .nav-right {
-        flex-shrink: 0;
-        display: flex;
-        gap: 12px;
-        min-width: 140px;
-        justify-content: flex-end;
       }
 
       .progress-section {
         flex: 1;
         text-align: center;
-        max-width: 200px;
       }
 
       .progress-dots {
         display: flex;
         justify-content: center;
-        gap: 10px;
-        margin-bottom: 12px;
+        gap: 8px;
+        margin-bottom: 8px;
       }
 
       .progress-dot {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         background: #e2e8f0;
         transition: all 0.3s ease;
@@ -743,18 +614,14 @@ export class OnboardingFlow {
       }
 
       .nav-btn {
-        padding: 12px 24px;
+        padding: 10px 20px;
         border: none;
-        border-radius: 10px;
+        border-radius: 8px;
         font-weight: 500;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
         cursor: pointer;
         transition: all 0.2s ease;
         background: transparent;
-        min-width: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
 
       .nav-btn.secondary {
@@ -765,7 +632,6 @@ export class OnboardingFlow {
       .nav-btn.secondary:hover {
         background: #f8fafc;
         border-color: #cbd5e0;
-        transform: translateY(-1px);
       }
 
       .nav-btn.primary {
@@ -775,7 +641,7 @@ export class OnboardingFlow {
       }
 
       .nav-btn.primary:hover {
-        transform: translateY(-2px);
+        transform: translateY(-1px);
         box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
       }
 
@@ -786,7 +652,6 @@ export class OnboardingFlow {
 
       .nav-btn.success:hover {
         box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
-        transform: translateY(-2px);
       }
 
       /* Animations */
@@ -855,147 +720,150 @@ export class OnboardingFlow {
         }
 
         .onboarding-header {
-          padding: 24px 32px;
+          padding: 20px 24px;
         }
 
         .brand-title {
-          font-size: 1.75rem;
+          font-size: 1.5rem;
         }
 
         .brand-icon {
-          font-size: 2.8rem;
+          font-size: 2.5rem;
         }
 
         .onboarding-step {
-          padding: 32px 40px;
-          min-height: 400px;
+          padding: 24px;
         }
 
         .step-content h2 {
-          font-size: 1.625rem;
-          margin-bottom: 24px;
+          font-size: 1.5rem;
         }
 
         .key-features {
           grid-template-columns: 1fr;
-          gap: 20px;
-          margin-top: 32px;
-        }
-
-        .feature-item {
-          padding: 20px;
+          gap: 16px;
         }
 
         .control-section {
-          gap: 32px;
-          margin-top: 28px;
+          gap: 24px;
         }
 
         .control-step {
-          padding: 24px;
-          max-width: 100%;
+          padding: 20px;
         }
 
         .onboarding-navigation {
-          padding: 28px 32px;
+          padding: 20px 24px;
           flex-direction: column;
-          gap: 24px;
-          align-items: stretch;
+          gap: 16px;
+        }
+
+        .nav-left, .nav-right {
+          width: 100%;
         }
 
         .nav-left {
-          order: 3;
-          width: 100%;
-          min-width: unset;
+          order: 2;
         }
 
         .nav-right {
-          order: 2;
-          width: 100%;
-          min-width: unset;
-          justify-content: center;
-          gap: 16px;
+          order: 3;
         }
 
         .progress-section {
           order: 1;
-          max-width: unset;
-        }
-
-        .progress-dots {
-          margin-bottom: 16px;
-        }
-
-        .nav-btn {
-          flex: 1;
-          max-width: 140px;
         }
       }
 
       @media (max-width: 480px) {
         .onboarding-step {
-          padding: 24px 20px;
-          min-height: 350px;
-        }
-
-        .step-content h2 {
-          font-size: 1.5rem;
-          margin-bottom: 20px;
+          padding: 20px;
         }
 
         .welcome-description {
           font-size: 1rem;
-          margin-bottom: 32px;
         }
 
         .feature-item {
-          padding: 18px;
-          gap: 16px;
-        }
-
-        .feature-icon {
-          font-size: 2rem;
+          padding: 16px;
         }
 
         .control-step {
-          padding: 20px;
-          gap: 16px;
-        }
-
-        .step-number {
-          width: 32px;
-          height: 32px;
-          font-size: 0.8rem;
-        }
-
-        .onboarding-navigation {
-          padding: 24px 20px;
-          gap: 20px;
-        }
-
-        .nav-btn {
-          padding: 12px 20px;
-          font-size: 0.85rem;
-          min-width: 100px;
-        }
-
-        .tips-list {
-          gap: 12px;
-        }
-
-        .tip-item {
-          padding: 10px 14px;
+          padding: 16px;
         }
       }
     `;
   }
 
   private setupEventListeners(): void {
+    const nextBtn = document.getElementById('onboarding-next');
+    const backBtn = document.getElementById('onboarding-back');
     const skipBtn = document.getElementById('onboarding-skip');
     const finishBtn = document.getElementById('onboarding-finish');
 
+    nextBtn?.addEventListener('click', () => this.nextStep());
+    backBtn?.addEventListener('click', () => this.previousStep());
     skipBtn?.addEventListener('click', () => this.finish());
     finishBtn?.addEventListener('click', () => this.finish());
+  }
+
+  private nextStep(): void {
+    if (this.currentStep < this.totalSteps - 1) {
+      this.currentStep++;
+      this.updateStep();
+    }
+  }
+
+  private previousStep(): void {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+      this.updateStep();
+    }
+  }
+
+  private updateStep(): void {
+    // Hide all steps
+    const steps = this.element.querySelectorAll('.onboarding-step');
+    steps.forEach(step => step.classList.remove('active'));
+
+    // Show current step
+    const currentStepEl = this.element.querySelector(`[data-step="${this.currentStep}"]`);
+    currentStepEl?.classList.add('active');
+
+    // Update progress dots
+    const dots = this.element.querySelectorAll('.progress-dot');
+    dots.forEach((dot, index) => {
+      if (index === this.currentStep) {
+        dot.classList.add('active');
+      } else {
+        dot.classList.remove('active');
+      }
+    });
+
+    // Update progress text
+    const currentStepText = document.getElementById('current-step');
+    if (currentStepText) {
+      currentStepText.textContent = (this.currentStep + 1).toString();
+    }
+
+    // Update button visibility
+    const nextBtn = document.getElementById('onboarding-next');
+    const backBtn = document.getElementById('onboarding-back');
+    const finishBtn = document.getElementById('onboarding-finish');
+
+    if (backBtn) {
+      backBtn.style.display = this.currentStep > 0 ? 'block' : 'none';
+    }
+
+    if (nextBtn && finishBtn) {
+      if (this.currentStep === this.totalSteps - 1) {
+        nextBtn.style.display = 'none';
+        finishBtn.style.display = 'block';
+      } else {
+        nextBtn.style.display = 'block';
+        finishBtn.style.display = 'none';
+      }
+    }
   }
 
   private finish(): void {

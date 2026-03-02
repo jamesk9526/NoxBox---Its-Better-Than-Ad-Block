@@ -1,23 +1,40 @@
 import { HistoryManager } from './HistoryManager.js';
+import { SearchEngineManager } from './SearchEngineManager.js';
+import { AppSettings } from '../../types/index.js';
 
 export class BottomBar {
   private element: HTMLElement;
   private addressInput: HTMLInputElement;
   private webview: any; // Electron webview element
   private historyManager: HistoryManager;
+  private searchEngineManager: SearchEngineManager;
   private currentUrl: string = '';
   private isMuted: boolean = true; // Start muted by default
   private isUnblurMode: boolean = false; // Start with unblur mode off
+  private settings: AppSettings;
 
-  constructor() {
+  constructor(settings?: AppSettings) {
     console.log('BottomBar constructor called');
     this.element = document.getElementById('bottom-bar')!;
     this.addressInput = document.getElementById('address-input') as HTMLInputElement;
     this.webview = document.getElementById('browser-webview') as any;
     this.historyManager = HistoryManager.getInstance();
+    this.searchEngineManager = SearchEngineManager.getInstance();
+    
+    // Use provided settings or default values
+    this.settings = settings || {
+      searchEngine: 'google',
+      homePage: '/home.html', // This will be overridden by SearchEngineManager
+      mediaBlur: { blurImages: true, blurVideos: true, blurRadiusPx: 25 },
+      theme: 'dark',
+      accessibility: { highContrast: false, largeText: false, reducedMotion: false },
+      ui: { showHoverReveal: false }
+    };
+    
     console.log('Browser webview found:', !!this.webview);
     this.setupEventListeners();
     this.initializeNavigation();
+    this.initializeSearchEngineSelector();
   }
 
   private setupEventListeners(): void {
@@ -216,6 +233,18 @@ export class BottomBar {
             } else {
               console.warn('appApi not available for opening in system browser');
             }
+          } else if (event.data.type === 'home-search') {
+            console.log('Received home search request:', event.data.data);
+            const { query, searchEngine } = event.data.data;
+            this.handleSearch(query, searchEngine);
+          } else if (event.data.type === 'home-navigate') {
+            console.log('Received home navigation request:', event.data.data);
+            const { url } = event.data.data;
+            this.navigateTo(url);
+          } else if (event.data.type === 'settings-updated') {
+            console.log('Received settings update from home page:', event.data.data);
+            const { settings } = event.data.data;
+            this.updateSettings(settings as AppSettings);
           }
         }
       });
@@ -261,8 +290,8 @@ export class BottomBar {
 
   private initializeNavigation(): void {
     console.log('Initializing navigation');
-    // Set initial src to Google
-    const initialUrl = 'https://www.google.com';
+    // Set initial URL to the configured home page
+    const initialUrl = this.searchEngineManager.getHomePage(this.settings.searchEngine, this.settings);
     try {
       if (this.webview) {
         const current = this.webview.getAttribute('src');
@@ -326,6 +355,23 @@ export class BottomBar {
     this.updateNavigationButtons();
   }
 
+  private initializeSearchEngineSelector(): void {
+    const searchEngineSelect = document.getElementById('bottom-search-engine-select') as HTMLSelectElement;
+    if (searchEngineSelect) {
+      // Set initial value based on current settings
+      searchEngineSelect.value = this.settings.searchEngine;
+
+      // Listen for changes
+      searchEngineSelect.addEventListener('change', (event) => {
+        const target = event.target as HTMLSelectElement;
+        const newEngine = target.value;
+        console.log('Search engine changed to:', newEngine);
+        this.settings.searchEngine = newEngine;
+        this.updateSettings(this.settings);
+      });
+    }
+  }
+
   private handleAddressSubmit(): void {
     const url = this.addressInput.value.trim();
     console.log('Handling address submit:', url);
@@ -337,11 +383,10 @@ export class BottomBar {
         // If it looks like a domain (contains a dot and no spaces), add https
         if (url.includes('.') && !url.includes(' ')) {
           fullUrl = 'https://' + url;
-        } else if (url.includes(' ') || (!url.includes('.') && url.length > 0)) {
-          // For search terms, redirect to Google search
+        } else if (this.searchEngineManager.shouldTreatAsSearch(url)) {
+          // For search terms, use the selected search engine
           console.log('Treating as search term:', url);
-          const searchQuery = encodeURIComponent(url);
-          fullUrl = `https://www.google.com/search?q=${searchQuery}`;
+          fullUrl = this.searchEngineManager.buildSearchUrl(this.settings.searchEngine, url);
         } else {
           // This shouldn't happen, but handle gracefully
           console.log('Unexpected URL format:', url);
@@ -353,6 +398,13 @@ export class BottomBar {
       console.log('Navigating to:', fullUrl);
       this.navigateTo(fullUrl);
     }
+  }
+
+  private handleSearch(query: string, searchEngine?: string): void {
+    console.log('Handling search:', query, 'with engine:', searchEngine);
+    const engineToUse = searchEngine || this.settings.searchEngine;
+    const searchUrl = this.searchEngineManager.buildSearchUrl(engineToUse, query);
+    this.navigateTo(searchUrl);
   }
 
   private navigateTo(url: string): void {
@@ -668,8 +720,9 @@ export class BottomBar {
   }
 
   private goHome(): void {
-    console.log('Going home');
-    this.navigateTo('https://www.google.com');
+    const homePage = this.searchEngineManager.getHomePage(this.settings.searchEngine, this.settings);
+    console.log('Going home to:', homePage);
+    this.navigateTo(homePage);
   }
 
   private bookmarkCurrentPage(): void {
@@ -1141,5 +1194,13 @@ export class BottomBar {
     }
     
     await this.injectBlurStyles(blurRadiusPx);
+  }
+
+  /**
+   * Update settings (search engine, home page, etc.)
+   */
+  public updateSettings(newSettings: AppSettings): void {
+    console.log('BottomBar: updateSettings called with:', newSettings);
+    this.settings = { ...this.settings, ...newSettings };
   }
 }

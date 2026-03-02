@@ -1,4 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
+
+:root {
+  --bg-page: #f5f7fb;
+  --bg-surface: #ffffff;
+  --bg-muted: #eef2f7;
+  --text-strong: #111827;
+  --text-regular: #1f2937;
+  --text-muted: #6b7280;
+  --border: rgba(17, 24, 39, 0.08);
+  --accent: #0f62fe;
+  --accent-soft: #e8edfb;
+  --shadow: 0 6px 18px rgba(17, 24, 39, 0.08);
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+  background: var(--bg-page);
+  color: var(--text-regular);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+#app {
+  width: min(960px, 100%);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin-bottom: 12px;
+}
+
+p {
+  font-size: 15px;
+  color: var(--text-muted);
+}body {
     background-color: #f3f3f3;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #333;
